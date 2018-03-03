@@ -95,7 +95,7 @@ def statusCommand(String dni) {
 
 def getDoors() {
     log.debug "Executing - getDoors()"
-    def jsonbody = new groovy.json.JsonOutput().toJson([path: "/gmqtt/doors"])
+    def jsonbody = new groovy.json.JsonOutput().toJson([path: "/gmqtt/doors", body: {}])
     log.debug "Executing - getDoors() - ${jsonbody}"
     doorNotification(jsonbody)
 }
