@@ -191,7 +191,7 @@ def ssdpHandler(evt) {
             d.deviceAddress = parsedEvent.deviceAddress
             def child = getChildDevice(parsedEvent.mac+parsedEvent.deviceAddress)
             if (child) {
-                child.sync(parsedEvent.networkAddress, parsedEvent.deviceAddress)
+                child.sync(parsedEvent.networkAddress, parsedEvent.deviceAddress,parsedEvent.mac)
             }
         }
     } else {
