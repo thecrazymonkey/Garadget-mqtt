@@ -162,7 +162,7 @@ def addDevices() {
                     "ip": selectedDevice.value.networkAddress,
                     "port": selectedDevice.value.deviceAddress
             ])
-            res.sync(selectedDevice.value.networkAddress, selectedDevice.value.deviceAddress)
+//            res.sync(selectedDevice.value.networkAddress, selectedDevice.value.deviceAddress,selectedDevice.value.mac)
         }
     }
 }
