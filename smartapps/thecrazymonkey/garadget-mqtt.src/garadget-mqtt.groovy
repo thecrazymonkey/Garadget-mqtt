@@ -151,13 +151,13 @@ def addDevices() {
         def d
         if (selectedDevice) {
             d = getChildDevices()?.find {
-                it.deviceNetworkId == selectedDevice.value.mac
+                it.deviceNetworkId == selectedDevice.value.mac+selectedDevice.value.deviceAddress
             }
         }
 
         if (!d) {
-            log.debug "Creating Garadget MQTT Device with dni: ${selectedDevice.value.mac}"
-            addChildDevice("thecrazymonkey", "Garadget MQTT", selectedDevice.value.mac, selectedDevice?.value.hub, [
+            log.debug "Creating Garadget MQTT Device with dni: ${selectedDevice.value.mac}${selectedDevice.value.deviceAddress}"
+            addChildDevice("thecrazymonkey", "Garadget MQTT", selectedDevice.value.mac+selectedDevice.value.deviceAddress, selectedDevice?.value.hub, [
                     "label": selectedDevice?.value?.name ?: "Garadget MQTT",
                     "data": [
                             "mac": selectedDevice.value.mac,
