@@ -147,7 +147,7 @@ def addDevices() {
         devices.each {
             log.debug "Selecting devices from list : ${it.value.mac}${it.value.deviceAddress}"
         }
-        def selectedDevice = devices.find { it.value.mac == dni }
+        def selectedDevice = devices.find { it.value.mac+it.value.deviceAddress == dni }
         def d
         if (selectedDevice) {
             d = getChildDevices()?.find {
