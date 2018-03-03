@@ -153,7 +153,7 @@ def addDevices() {
 
         if (!d) {
             log.debug "Creating Wink Relay Device with dni: ${selectedDevice.value.mac}"
-            addChildDevice("thecrazymonkey", "Garadget-mqtt", selectedDevice.value.mac, selectedDevice?.value.hub, [
+            addChildDevice("thecrazymonkey", "Garadget MQTT", selectedDevice.value.mac, selectedDevice?.value.hub, [
                     "label": selectedDevice?.value?.name ?: "Garadget-mqtt",
                     "data": [
                             "mac": selectedDevice.value.mac,
