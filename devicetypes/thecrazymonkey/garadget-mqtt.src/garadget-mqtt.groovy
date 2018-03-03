@@ -32,27 +32,6 @@ metadata {
         capability "Configuration"
         capability "Garage Door Control"
     }
-    preferences {
-        input("ip", "string",
-                title: "MQTT Bridge IP Address",
-                description: "MQTT Bridge IP Address",
-                required: true,
-                displayDuringSetup: true
-        )
-        input("port", "string",
-                title: "MQTT Bridge Port",
-                description: "MQTT Bridge Port",
-                required: true,
-                displayDuringSetup: true
-        )
-        input("mac", "string",
-                title: "MQTT Bridge MAC Address",
-                description: "MQTT Bridge MAC Address",
-                required: true,
-                displayDuringSetup: true
-        )
-    }
-
     simulator {
     }
     tiles {
@@ -62,14 +41,25 @@ metadata {
         standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
             state "default", label:'Refresh', action: "refresh.refresh", icon: "st.secondary.refresh-icon"
         }
-        main "basic"
+        main "refresh"
     }
 
 }
 
+def sync(ip, port) {
+    def existingIp = getDataValue("ip")
+    def existingPort = getDataValue("port")
+    if (ip && ip != existingIp) {
+        updateDataValue("ip", ip)
+    }
+    if (port && port != existingPort) {
+        updateDataValue("port", port)
+    }
+}
 
 def refresh() {
     log.debug "Executing 'refresh'"
+    getDoors()
 }
 
 def configure() {
@@ -77,15 +67,10 @@ def configure() {
 //    SetConfigCommand()
 }
 
-
-
-
 private getDeviceDetails() {
     def fullDni = device.deviceNetworkId
     return fullDni
 }
-
-
 
 def on(String dni) {
 
@@ -109,6 +94,12 @@ def stop(String dni) {
 def statusCommand(String dni) {
     log.debug "Executing - statusCommand() - 'sendCommand.statusCommand'"
     doorNotification("doorStatus", [])
+}
+
+def getDoors() {
+    log.debug "Executing - getDoors()"
+    def jsonbody = new groovy.json.JsonOutput().toJson(path: "/gmqtt/doors")
+    doorNotification(jsonbody)
 }
 
 def openCommand(String dni) {
@@ -181,8 +172,9 @@ def parse(String description) {
 
     log.debug "Parsing '${description}'"
     def msg = parseLanMessage(description)
+    log.debug "Pared '${msg}'"
 
-    return createEvent(name: "message", value: new JsonOutput().toJson(msg.data))
+//    return createEvent(name: "message", value: new JsonOutput().toJson(msg.data))
 }
 
 // Send message to the Bridge
