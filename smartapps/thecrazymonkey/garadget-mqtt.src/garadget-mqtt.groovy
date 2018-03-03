@@ -20,11 +20,11 @@ definition(
         name: "Garadget MQTT",
         namespace: "thecrazymonkey",
         author: "Ivan Kunz",
-        description: "Handling Garadget over mqtt2rest",
+        description: "Garadget Integration using MQTT",
         category: "My Apps",
-        iconUrl: "https://s3.amazonaws.com/smartapp-icons/Connections/Cat-Connections.png",
-        iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Connections/Cat-Connections@2x.png",
-        iconX3Url: "https://s3.amazonaws.com/smartapp-icons/Connections/Cat-Connections@3x.png")
+        iconUrl:   "https://dl.dropboxusercontent.com/s/lkrub180btbltm8/garadget_128.png",
+        iconX2Url: "https://dl.dropboxusercontent.com/s/w8tvaedewwq56kr/garadget_256.png",
+        iconX3Url: "https://dl.dropboxusercontent.com/s/5hiec37e0y5py06/garadget_512.png")
 
 
         preferences {
