@@ -47,6 +47,7 @@ def sync(ip, port) {
     log.debug "Executing 'sync': ${ip}:${port}"
     def existingIp = getDataValue("ip")
     def existingPort = getDataValue("port")
+    log.debug "Executing 'sync' existing : ${existingIp}:${existingPort}"
     if (ip && ip != existingIp) {
         updateDataValue("ip", ip)
     }
@@ -57,7 +58,7 @@ def sync(ip, port) {
 
 def refresh() {
     log.debug "Executing 'refresh'"
-    log.debug "Device info: ${device.data.ip}"
+    log.debug "Device info: ${device}"
     getDoors()
 }
 
