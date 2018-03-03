@@ -42,9 +42,9 @@ def deviceDiscovery() {
     def devices = getVerifiedDevices()
     devices.each {
         def value = "GaradgetMQTT ${it.value.ssdpUSN.split(':')[1][-3..-1]}" //it.value.name ?: "Default"
-        def key = it.value.mac
+        def key = it.value.mac+it.value.deviceAddress
         options["${key}"] = value
-        log.debug "║ ★ ${it.value.ssdpUSN} @ ${it.value.networkAddress}:${it.value.deviceAddress} (${it.value.mac})"
+        log.debug "║ ★ ${it.value.ssdpUSN} @ ${it.value.networkAddress}:${it.value.deviceAddress} (${it.value.mac}${it.value.deviceAddress})"
     }
     if(devices.size() == 0)
         log.debug "║ [no devices are verified]"
@@ -110,7 +110,7 @@ Map verifiedDevices() {
     def map = [:]
     devices.each {
         def value = it.value.name ?: "Wink Relay ${it.value.ssdpUSN.split(':')[1][-3..-1]}"
-        def key = it.value.mac
+        def key = it.value.mac+it.value.deviceAddress
         map["${key}"] = value
     }
     map
@@ -123,7 +123,7 @@ void verifyDevices() {
         int port = convertHexToInt(it.value.deviceAddress)
         String ip = convertHexToIP(it.value.networkAddress)
         String host = "${ip}:${port}"
-        log.debug "--☆ Verifying device ${it.value.mac} at ${host}${it.value.ssdpPath}"
+        log.debug "--☆ Verifying device ${it.value.mac}${it.value.deviceAddress} at ${host}${it.value.ssdpPath}"
         sendHubCommand(new physicalgraph.device.HubAction("""GET ${it.value.ssdpPath} HTTP/1.1\r\nHOST: $host\r\n\r\n""", physicalgraph.device.Protocol.LAN, host, [callback: deviceDescriptionHandler]))
     }
 }
@@ -143,18 +143,19 @@ def addDevices() {
     def devices = getDevices()
 
     selectedDevices.each { dni ->
-        def selectedDevice = devices.find { it.value.mac == dni }
+        def realdni = it.value.mac+it.value.deviceAddress
+        def selectedDevice = devices.find { realdni == dni }
         def d
         if (selectedDevice) {
             d = getChildDevices()?.find {
-                it.deviceNetworkId == selectedDevice.value.mac
+                it.deviceNetworkId == selectedDevice.value.mac+selectedDevice.value.deviceAddress
             }
         }
 
         if (!d) {
-            log.debug "Creating Wink Relay Device with dni: ${selectedDevice.value.mac}"
-            addChildDevice("thecrazymonkey", "Garadget MQTT", selectedDevice.value.mac, selectedDevice?.value.hub, [
-                    "label": selectedDevice?.value?.name ?: "Garadget-mqtt",
+            log.debug "Creating Garadget MQTT Device with dni: ${selectedDevice.value.mac}${selectedDevice.value.deviceAddress}"
+            addChildDevice("thecrazymonkey", "Garadget MQTT", selectedDevice.value.mac+selectedDevice.value.deviceAddress, selectedDevice?.value.hub, [
+                    "label": selectedDevice?.value?.name ?: "Garadget MQTT",
                     "data": [
                             "mac": selectedDevice.value.mac,
                             "ip": selectedDevice.value.networkAddress,
@@ -178,7 +179,7 @@ def ssdpHandler(evt) {
     def devices = getDevices()
     devices.each {
         def star = it.value.verified ? "★" : "☆";
-        log.debug "---║ > ${star} ${it.value.ssdpUSN} @ ${it.value.networkAddress}:${it.value.deviceAddress} (${it.value.mac})"
+        log.debug "---║ > ${star} ${it.value.ssdpUSN} @ ${it.value.networkAddress}:${it.value.deviceAddress} (${it.value.mac}${it.value.deviceAddress})"
     }
     log.debug "---║ Devices at start of ssdpHandler: "
     String ssdpUSN = parsedEvent.ssdpUSN.toString()
@@ -187,7 +188,7 @@ def ssdpHandler(evt) {
         if (d.networkAddress != parsedEvent.networkAddress || d.deviceAddress != parsedEvent.deviceAddress) {
             d.networkAddress = parsedEvent.networkAddress
             d.deviceAddress = parsedEvent.deviceAddress
-            def child = getChildDevice(parsedEvent.mac)
+            def child = getChildDevice(parsedEvent.mac+parsedEvent.deviceAddress)
             if (child) {
                 child.sync(parsedEvent.networkAddress, parsedEvent.deviceAddress)
             }
