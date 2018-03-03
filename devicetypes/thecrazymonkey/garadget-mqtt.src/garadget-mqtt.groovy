@@ -61,7 +61,7 @@ def sync(ip, port, mac) {
 
 def refresh() {
     log.debug "Executing 'refresh'"
-    log.debug "Device info: ${device.mac}"
+    log.debug "Device info: ${device.data.mac}"
     getDoors()
 }
 
