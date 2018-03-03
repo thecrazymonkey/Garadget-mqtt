@@ -143,8 +143,7 @@ def addDevices() {
     def devices = getDevices()
 
     selectedDevices.each { dni ->
-        def realdni = it.value.mac+it.value.deviceAddress
-        def selectedDevice = devices.find { realdni == dni }
+        def selectedDevice = devices.find { it.value.mac == dni }
         def d
         if (selectedDevice) {
             d = getChildDevices()?.find {
