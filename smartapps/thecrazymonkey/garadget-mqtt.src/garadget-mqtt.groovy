@@ -16,10 +16,6 @@
  *  for the specific language governing permissions and limitations under the License.
  */
 
-import groovy.json.JsonSlurper
-import groovy.json.JsonOutput
-import groovy.transform.Field
-
 definition(
         name: "Garadget MQTT",
         namespace: "thecrazymonkey",
@@ -28,299 +24,198 @@ definition(
         category: "My Apps",
         iconUrl: "https://s3.amazonaws.com/smartapp-icons/Connections/Cat-Connections.png",
         iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Connections/Cat-Connections@2x.png",
-        iconX3Url: "https://s3.amazonaws.com/smartapp-icons/Connections/Cat-Connections@3x.png"
-)
+        iconX3Url: "https://s3.amazonaws.com/smartapp-icons/Connections/Cat-Connections@3x.png")
 
-preferences {
-    section("Send Notifications?") {
-        input("recipients", "contact", title: "Send notifications to", multiple: true, required: false)
-    }
 
-    section ("Input") {
-        CAPABILITY_MAP.each { key, capability ->
-            input key, capability["capability"], title: capability["name"], multiple: true, required: false
+        preferences {
+            page(name: "deviceDiscovery", title: "Garadget MQTT Device Setup", content: "deviceDiscovery")
         }
-    }
 
-    section ("Bridge") {
-        input "bridge", "capability.notification", title: "Notify this Bridge", required: true, multiple: false
+def getSearchTarget(){
+    return "urn:thecrazymonkey-com:device:GaradgetMQTT:1";
+}
+
+def deviceDiscovery() {
+    log.debug "╚═══════════════════════════════════════════════════════════════════════════════════════════════════"
+
+    def options = [:]
+    def devices = getVerifiedDevices()
+    devices.each {
+        def value = "GaradgetMQTT ${it.value.ssdpUSN.split(':')[1][-3..-1]}" //it.value.name ?: "Default"
+        def key = it.value.mac
+        options["${key}"] = value
+        log.debug "║ ★ ${it.value.ssdpUSN} @ ${it.value.networkAddress}:${it.value.deviceAddress} (${it.value.mac})"
+    }
+    if(devices.size() == 0)
+        log.debug "║ [no devices are verified]"
+    log.debug "║ Verified devices: "
+    log.debug "║ "
+
+    ssdpSubscribe()
+    //subscribeNetworkEvents()
+    ssdpDiscover()
+    verifyDevices()
+
+    log.debug "╔════PAGE: DEVICE DISCOVERY════════════════════════════════════════════════════════════════════════════"
+
+    return dynamicPage(name: "deviceDiscovery", title: "Starting Discover", nextPage: "", refreshInterval: 5, install: true, uninstall: true) {
+        section("Please wait while we discover your GaradgetMQTT.  Please make sure the GaradgetMQTT Service is running. \r\n\r\nDiscovery can take five minutes or more, so sit back and relax! Select your device below once discovered.") {
+            input "selectedDevices", "enum", required: true, title: "Select Devices (${options.size() ?: 0} found)", multiple: true, options: options
+        }
     }
 }
 
 def installed() {
     log.debug "Installed with settings: ${settings}"
 
-    runEvery15Minutes(initialize)
     initialize()
 }
 
 def updated() {
     log.debug "Updated with settings: ${settings}"
 
-    // Unsubscribe from all events
     unsubscribe()
-    // Subscribe to stuff
     initialize()
 }
 
-// Return list of displayNames
-def getDeviceNames(devices) {
-    def list = []
-    devices.each{device->
-        list.push(device.displayName)
-    }
-    list
-}
-
 def initialize() {
-    // Subscribe to events from the bridge
-    subscribe(bridge, "message", bridgeHandler)
+    unsubscribe()
+    unschedule()
 
-    // Update the bridge
-    updateSubscription()
+    ssdpSubscribe()
+    //subscribeNetworkEvents()
+
+    if (selectedDevices) {
+        log.debug "Adding selected devices from SSDP discovery..."
+        addDevices()
+    }
+
+
+    runEvery5Minutes("ssdpDiscover")
+    log.debug "Done with initialize."
 }
 
-// Update the bridge"s subscription
-def updateSubscription() {
-    def attributes = [
-            notify: ["Contacts", "System"]
-    ]
-    CAPABILITY_MAP.each { key, capability ->
-        capability["attributes"].each { attribute ->
-            if (!attributes.containsKey(attribute)) {
-                attributes[attribute] = []
-            }
-            settings[key].each {device ->
-                attributes[attribute].push(device.displayName)
+void ssdpDiscover() {
+    log.debug "║ 2. Searching for ${searchTarget}"
+    sendHubCommand(new physicalgraph.device.HubAction("lan discovery ${searchTarget}", physicalgraph.device.Protocol.LAN))
+}
+
+void ssdpSubscribe() {
+    log.debug "║ 1. Subscribing to events: ssdpTerm.${searchTarget}"
+    subscribe(location, "ssdpTerm.${searchTarget}", ssdpHandler)
+}
+
+Map verifiedDevices() {
+    def devices = getVerifiedDevices()
+    def map = [:]
+    devices.each {
+        def value = it.value.name ?: "Wink Relay ${it.value.ssdpUSN.split(':')[1][-3..-1]}"
+        def key = it.value.mac
+        map["${key}"] = value
+    }
+    map
+}
+
+void verifyDevices() {
+    log.debug "║ 3. Verifying all devices which are not yet verified..."
+    def devices = getDevices().findAll { it?.value?.verified != true }
+    devices.each {
+        int port = convertHexToInt(it.value.deviceAddress)
+        String ip = convertHexToIP(it.value.networkAddress)
+        String host = "${ip}:${port}"
+        log.debug "--☆ Verifying device ${it.value.mac} at ${host}${it.value.ssdpPath}"
+        sendHubCommand(new physicalgraph.device.HubAction("""GET ${it.value.ssdpPath} HTTP/1.1\r\nHOST: $host\r\n\r\n""", physicalgraph.device.Protocol.LAN, host, [callback: deviceDescriptionHandler]))
+    }
+}
+
+def getVerifiedDevices() {
+    getDevices().findAll{ it.value.verified == true }
+}
+
+def getDevices() {
+    if (!state.devices) {
+        state.devices = [:]
+    }
+    state.devices
+}
+
+def addDevices() {
+    def devices = getDevices()
+
+    selectedDevices.each { dni ->
+        def selectedDevice = devices.find { it.value.mac == dni }
+        def d
+        if (selectedDevice) {
+            d = getChildDevices()?.find {
+                it.deviceNetworkId == selectedDevice.value.mac
             }
         }
-    }
-    def json = new groovy.json.JsonOutput().toJson([
-            path: "/subscribe",
-            body: [
-                    devices: attributes
-            ]
-    ])
 
-    log.debug "Updating subscription: ${json}"
-
-    bridge.deviceNotification(json)
-}
-
-// Receive an event from the bridge
-def bridgeHandler(evt) {
-    def json = new JsonSlurper().parseText(evt.value)
-    log.debug "Received device event from bridge: ${json}"
-
-    if (json.type == "notify") {
-        if (json.name == "Contacts") {
-            sendNotificationToContacts("${json.value}", recipients)
-        } else {
-            sendNotificationEvent("${json.value}")
-        }
-        return
-    }
-
-    // @NOTE this is stored AWFUL, we need a faster lookup table
-    // @NOTE this also has no fast fail, I need to look into how to do that
-    CAPABILITY_MAP.each { key, capability ->
-        if (capability["attributes"].contains(json.type)) {
-            settings[key].each {device ->
-                if (device.displayName == json.name) {
-                    if (json.command == false) {
-                        if (device.getSupportedCommands().any {it.name == "setStatus"}) {
-                            log.debug "Setting state ${json.type} = ${json.value}"
-                            device.setStatus(json.type, json.value)
-                            state.ignoreEvent = json;
-                        }
-                    }
-                    else {
-                        if (capability.containsKey("action")) {
-                            def action = capability["action"]
-                            // Yes, this is calling the method dynamically
-                            "$action"(device, json.type, json.value)
-                        }
-                    }
-                }
-            }
+        if (!d) {
+            log.debug "Creating Wink Relay Device with dni: ${selectedDevice.value.mac}"
+            addChildDevice("thecrazymonkey", "Garadget-mqtt", selectedDevice.value.mac, selectedDevice?.value.hub, [
+                    "label": selectedDevice?.value?.name ?: "Garadget-mqtt",
+                    "data": [
+                            "mac": selectedDevice.value.mac,
+                            "ip": selectedDevice.value.networkAddress,
+                            "port": selectedDevice.value.deviceAddress
+                    ]
+            ])
         }
     }
 }
 
-// Receive an event from a device
-def inputHandler(evt) {
-    if (
-    state.ignoreEvent
-            && state.ignoreEvent.name == evt.displayName
-            && state.ignoreEvent.type == evt.name
-            && state.ignoreEvent.value == evt.value
-    ) {
-        log.debug "Ignoring event ${state.ignoreEvent}"
-        state.ignoreEvent = false;
+def ssdpHandler(evt) {
+    def description = evt.description
+    def hub = evt?.hubId
+
+    def parsedEvent = parseLanMessage(description)
+    parsedEvent << ["hub":hub]
+
+    log.debug "---╚═══════════════════════════════════════════════════════════════════════════════════════════════════"
+    //log.debug "---║ RAW PARSED EVENT: $parsedEvent"
+
+    def devices = getDevices()
+    devices.each {
+        def star = it.value.verified ? "★" : "☆";
+        log.debug "---║ > ${star} ${it.value.ssdpUSN} @ ${it.value.networkAddress}:${it.value.deviceAddress} (${it.value.mac})"
     }
-    else {
-        def json = new JsonOutput().toJson([
-                path: "/push",
-                body: [
-                        name: evt.displayName,
-                        value: evt.value,
-                        type: evt.name
-                ]
-        ])
-
-        log.debug "Forwarding device event to bridge: ${json}"
-        bridge.deviceNotification(json)
-    }
-}
-
-// +---------------------------------+
-// | WARNING, BEYOND HERE BE DRAGONS |
-// +---------------------------------+
-// These are the functions that handle incoming messages from MQTT.
-// I tried to put them in closures but apparently SmartThings Groovy sandbox
-// restricts you from running clsures from an object (it's not safe).
-
-def actionAlarm(device, attribute, value) {
-    switch (value) {
-        case "strobe":
-            device.strobe()
-            break
-        case "siren":
-            device.siren()
-            break
-        case "off":
-            device.off()
-            break
-        case "both":
-            device.both()
-            break
-    }
-}
-
-def actionColor(device, attribute, value) {
-    switch (attribute) {
-        case "hue":
-            device.setHue(value as float)
-            break
-        case "saturation":
-            device.setSaturation(value as float)
-            break
-        case "color":
-            def values = value.split(',')
-            def colormap = ["hue": values[0] as float, "saturation": values[1] as float]
-            device.setColor(colormap)
-            break
-    }
-}
-
-def actionOpenClosed(device, attribute, value) {
-    if (value == "open") {
-        device.open()
-    } else if (value == "closed") {
-        device.close()
-    }
-}
-
-def actionOnOff(device, attribute, value) {
-    if (value == "off") {
-        device.off()
-    } else if (value == "on") {
-        device.on()
-    }
-}
-
-def actionActiveInactive(device, attribute, value) {
-    if (value == "active") {
-        device.active()
-    } else if (value == "inactive") {
-        device.inactive()
-    }
-}
-
-def actionThermostat(device, attribute, value) {
-    switch(attribute) {
-        case "heatingSetpoint":
-            device.setHeatingSetpoint(value)
-            break
-        case "coolingSetpoint":
-            device.setCoolingSetpoint(value)
-            break
-        case "thermostatMode":
-            device.setThermostatMode(value)
-            break
-        case "thermostatFanMode":
-            device.setThermostatFanMode(value)
-            break
-    }
-}
-
-def actionMusicPlayer(device, attribute, value) {
-    switch(attribute) {
-        case "level":
-            device.setLevel(value)
-            break
-        case "mute":
-            if (value == "muted") {
-                device.mute()
-            } else if (value == "unmuted") {
-                device.unmute()
+    log.debug "---║ Devices at start of ssdpHandler: "
+    String ssdpUSN = parsedEvent.ssdpUSN.toString()
+    if (devices."${ssdpUSN}") {
+        def d = devices."${ssdpUSN}"
+        if (d.networkAddress != parsedEvent.networkAddress || d.deviceAddress != parsedEvent.deviceAddress) {
+            d.networkAddress = parsedEvent.networkAddress
+            d.deviceAddress = parsedEvent.deviceAddress
+            def child = getChildDevice(parsedEvent.mac)
+            if (child) {
+                child.sync(parsedEvent.networkAddress, parsedEvent.deviceAddress)
             }
-            break
-        case "status":
-            if (device.getSupportedCommands().any {it.name == "setStatus"}) {
-                device.setStatus(value)
-            }
-            break
+        }
+    } else {
+        log.debug "---║ ☆ Adding ${ssdpUSN} to devices short list"
+        devices << ["${ssdpUSN}": parsedEvent]
     }
+    log.debug "---╔════SSDP HANDLER════════════════════════════════════════════════════════════════════════════════════"
 }
 
-def actionColorTemperature(device, attribute, value) {
-    device.setColorTemperature(value as int)
-}
-
-def actionLevel(device, attribute, value) {
-    device.setLevel(value as int)
-}
-
-def actionPresence(device, attribute, value) {
-    if (value == "present") {
-        device.arrived();
+void deviceDescriptionHandler(physicalgraph.device.HubResponse hubResponse) {
+    log.debug "---╚═══════════════════════════════════════════════════════════════════════════════════════════════════"
+    def body = hubResponse.xml
+    def devices = getDevices()
+    log.debug "---║ Got HTTP response for ${body.device.UDN}"
+    def device = devices.find { it?.key?.contains(body?.device?.UDN?.text()) }
+    if (device) {
+        log.debug "---║ Found device in our short list: ${body.device.UDN} - marking VERIFIED★"
+        device.value << [name: body?.device?.friendlyName?.text(), model:body?.device?.modelName?.text(), serialNumber:body?.device?.serialNumber?.text(), verified: true]
     }
-    else if (value == "not present") {
-        device.departed();
-    }
+    log.debug "---╔════DEVICE DESCRIPTION HANDLER═════════════════════════════════════════════════════════════════════════"
 }
 
-def actionConsumable(device, attribute, value) {
-    device.setConsumableStatus(value)
+private Integer convertHexToInt(hex) {
+    Integer.parseInt(hex,16)
 }
 
-def actionLock(device, attribute, value) {
-    if (value == "locked") {
-        device.lock()
-    } else if (value == "unlocked") {
-        device.unlock()
-    }
-}
-
-def actionCoolingThermostat(device, attribute, value) {
-    device.setCoolingSetpoint(value)
-}
-
-def actionThermostatFan(device, attribute, value) {
-    device.setThermostatFanMode(value)
-}
-
-def actionHeatingThermostat(device, attribute, value) {
-    device.setHeatingSetpoint(value)
-}
-
-def actionThermostatMode(device, attribute, value) {
-    device.setThermostatMode(value)
-}
-
-def actionTimedSession(device, attribute, value) {
-    if (attribute == "timeRemaining") {
-        device.setTimeRemaining(value)
-    }
+private String convertHexToIP(hex) {
+    [convertHexToInt(hex[0..1]),convertHexToInt(hex[2..3]),convertHexToInt(hex[4..5]),convertHexToInt(hex[6..7])].join(".")
 }
