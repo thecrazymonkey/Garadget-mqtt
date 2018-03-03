@@ -190,7 +190,8 @@ def doorNotification(message) {
 
     def slurper = new JsonSlurper()
     def parsed = slurper.parseText(message)
-
+    def ip = getDataValue("ip")
+    def port = getDataValue("port")
     parsed.body.callback = "http://" + device.hub.getDataValue("localIP") + ":" + device.hub.getDataValue("localSrvPortTCP")
     log.debug "Sending '${parsed}' to device '${ip}':'${port}'"
 
