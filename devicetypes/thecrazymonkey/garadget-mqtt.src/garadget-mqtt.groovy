@@ -35,9 +35,6 @@ metadata {
     simulator {
     }
     tiles {
-        valueTile("basic", "device.ip", width: 3, height: 2) {
-            state("basic", label:'OK')
-        }
         standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
             state "default", label:'Refresh', action: "refresh.refresh", icon: "st.secondary.refresh-icon"
         }
@@ -99,6 +96,7 @@ def statusCommand(String dni) {
 def getDoors() {
     log.debug "Executing - getDoors()"
     def jsonbody = new groovy.json.JsonOutput().toJson([path: "/gmqtt/doors"])
+    log.debug "Executing - getDoors() - ${jsonbody}"
     doorNotification(jsonbody)
 }
 
