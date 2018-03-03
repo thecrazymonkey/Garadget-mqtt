@@ -34,13 +34,12 @@ metadata {
     }
     simulator {
     }
-    tiles {
-        standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
-            state "default", label:'Refresh', action: "refresh.refresh", icon: "st.secondary.refresh-icon"
+    tiles(scale: 2) {
+        standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat", height: 2, width: 2) {
+            state "default", action:"refresh.refresh", icon:"st.secondary.refresh"
         }
-        main "refresh"
+        main("refresh")
     }
-
 }
 
 def sync(ip, port) {
@@ -161,8 +160,9 @@ private void createChildDevices() {
 def setNetworkAddress() {
     // Setting Network Device Id
     def mac = getDataValue("mac")
-    if (device.deviceNetworkId != "$mac") {
-        device.deviceNetworkId = "$mac"
+    def port = getDataValue("port")
+    if (device.deviceNetworkId != mac+port) {
+        device.deviceNetworkId = mac+port
         log.debug "Device Network Id set to ${device.deviceNetworkId}"
     }
 }
