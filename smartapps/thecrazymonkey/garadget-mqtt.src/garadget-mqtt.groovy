@@ -158,11 +158,9 @@ def addDevices() {
             log.debug "Creating Garadget MQTT Device with dni: ${selectedDevice.value.mac}${selectedDevice.value.deviceAddress}@${selectedDevice.value.networkAddress}:${selectedDevice.value.deviceAddress}"
             res = addChildDevice("thecrazymonkey", "Garadget MQTT", selectedDevice.value.mac+selectedDevice.value.deviceAddress, selectedDevice?.value.hub, [
                     "label": selectedDevice?.value?.name ?: "Garadget MQTT",
-                    "data": [
-                            "mac": selectedDevice.value.mac,
-                            "ip": selectedDevice.value.networkAddress,
-                            "port": selectedDevice.value.deviceAddress
-                    ]
+                    "mac": selectedDevice.value.mac,
+                    "ip": selectedDevice.value.networkAddress,
+                    "port": selectedDevice.value.deviceAddress
             ])
             res.sync(selectedDevice.value.networkAddress, selectedDevice.value.deviceAddress)
         }
