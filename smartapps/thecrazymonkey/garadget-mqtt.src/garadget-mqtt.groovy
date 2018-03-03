@@ -143,7 +143,10 @@ def addDevices() {
     def devices = getDevices()
 
     selectedDevices.each { dni ->
-        log.debug "Selecting devices : ${it.value.mac}:${dni}"
+        log.debug "Selecting devices : ${dni}"
+        devices.each {
+            log.debug "Selecting devices from list : ${it}"
+        }
         def selectedDevice = devices.find { it.value.mac == dni }
         def d
         if (selectedDevice) {
