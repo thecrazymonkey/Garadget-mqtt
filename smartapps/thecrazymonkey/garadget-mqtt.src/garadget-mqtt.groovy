@@ -41,8 +41,8 @@ def deviceDiscovery() {
     def options = [:]
     def devices = getVerifiedDevices()
     devices.each {
-        def value = "GaradgetMQTT ${it.value.ssdpUSN.split(':')[1][-3..-1]}" //it.value.name ?: "Default"
         def key = it.value.mac+it.value.deviceAddress
+        def value = "GaradgetMQTT ${it.value.ssdpUSN.split(':')[1][-3..-1]}" //it.value.name ?: "Default"
         options["${key}"] = value
         log.debug "║ ★ ${it.value.ssdpUSN} @ ${it.value.networkAddress}:${it.value.deviceAddress} (${it.value.mac}${it.value.deviceAddress})"
     }
@@ -109,8 +109,8 @@ Map verifiedDevices() {
     def devices = getVerifiedDevices()
     def map = [:]
     devices.each {
-        def value = it.value.name ?: "Wink Relay ${it.value.ssdpUSN.split(':')[1][-3..-1]}"
         def key = it.value.mac+it.value.deviceAddress
+        def value = it.value.name ?: "Wink Relay ${it.value.ssdpUSN.split(':')[1][-3..-1]}"
         map["${key}"] = value
     }
     map
@@ -143,17 +143,18 @@ def addDevices() {
     def devices = getDevices()
 
     selectedDevices.each { dni ->
+        log.debug "Selecting devices : ${it.value.mac}:${dni}"
         def selectedDevice = devices.find { it.value.mac == dni }
         def d
         if (selectedDevice) {
             d = getChildDevices()?.find {
-                it.deviceNetworkId == selectedDevice.value.mac+selectedDevice.value.deviceAddress
+                it.deviceNetworkId == selectedDevice.value.mac
             }
         }
 
         if (!d) {
-            log.debug "Creating Garadget MQTT Device with dni: ${selectedDevice.value.mac}${selectedDevice.value.deviceAddress}"
-            addChildDevice("thecrazymonkey", "Garadget MQTT", selectedDevice.value.mac+selectedDevice.value.deviceAddress, selectedDevice?.value.hub, [
+            log.debug "Creating Garadget MQTT Device with dni: ${selectedDevice.value.mac}"
+            addChildDevice("thecrazymonkey", "Garadget MQTT", selectedDevice.value.mac, selectedDevice?.value.hub, [
                     "label": selectedDevice?.value?.name ?: "Garadget MQTT",
                     "data": [
                             "mac": selectedDevice.value.mac,
