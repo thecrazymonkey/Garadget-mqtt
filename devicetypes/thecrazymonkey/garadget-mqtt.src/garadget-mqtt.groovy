@@ -160,17 +160,15 @@ private void createChildDevices() {
 // Store the MAC address as the device ID so that it can talk to SmartThings
 def setNetworkAddress() {
     // Setting Network Device Id
-    def hex = "$settings.mac".toUpperCase().replaceAll(':', '')
-    if (device.deviceNetworkId != "$hex") {
-        device.deviceNetworkId = "$hex"
+    def mac = getDataValue("mac")
+    if (device.deviceNetworkId != "$mac") {
+        device.deviceNetworkId = "$mac"
         log.debug "Device Network Id set to ${device.deviceNetworkId}"
     }
 }
 
 // Parse events from the Bridge
 def parse(String description) {
-    setNetworkAddress()
-
     log.debug "Parsing '${description}'"
     def msg = parseLanMessage(description)
     log.debug "Pared '${msg}'"
@@ -186,12 +184,12 @@ def doorNotification(message) {
     }
 
     log.debug "Sending '${message}' to device"
-//    setNetworkAddress()
+    setNetworkAddress()
 
     def slurper = new JsonSlurper()
     def parsed = slurper.parseText(message)
-    def ip = getDataValue("ip")
-    def port = getDataValue("port")
+    def ip = convertHexToIP(getDataValue("ip"))
+    def port = convertHexToInt(getDataValue("port"))
     parsed.body.callback = "http://" + device.hub.getDataValue("localIP") + ":" + device.hub.getDataValue("localSrvPortTCP")
     log.debug "Sending '${parsed}' to device '${ip}':'${port}'"
 
@@ -205,4 +203,12 @@ def doorNotification(message) {
             ]
     )
     hubAction
+}
+
+private Integer convertHexToInt(hex) {
+    return Integer.parseInt(hex,16)
+}
+
+private String convertHexToIP(hex) {
+    return [convertHexToInt(hex[0..1]),convertHexToInt(hex[2..3]),convertHexToInt(hex[4..5]),convertHexToInt(hex[6..7])].join(".")
 }
