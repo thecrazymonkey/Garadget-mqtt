@@ -161,21 +161,13 @@ def netConfigCommand() {
 
 def installed() {
     log.debug "Called installed"
-//    createChildDevices()
-//    response(refresh() + configure())
+    configure()
 }
 
-private void createChildDevices() {
-    // send query to the bridge to find garage doors list
-    // create devices per response
-//    def json = new groovy.json.JsonOutput().toJson([
-//            path: "/doors",
-//    ])
-//    log.debug "Getting dooors: ${json}"
-//    deviceNotification(json)
-    log.debug("creating child devices")
-    for (i in 1..2) {
-        addChildDevice("Garadget door", "${device.deviceNetworkId}-${i}", null, [completedSetup: true, label: "${device.displayName} (CH${i})", isComponent: true, componentName: "ch$i", componentLabel: "Channel $i"])
+private void createChildDevices(String [] doors) {
+    log.debug "Setting doors: '${doors}'"
+    for (door : doors) {
+        addChildDevice("Garadget door", "${door}", null, [completedSetup: true, label: "${device.displayName} (CH${i})", isComponent: true, componentName: "ch$i", componentLabel: "Channel $i"])
     }
 }
 
@@ -203,8 +195,11 @@ def parse(String description) {
             break
         case "config":
             break
+        case "doors":
+            // received list of doors
+            createChildDevices(receivedData.doors)
+            break
     }
-//    return createEvent(name: "message", value: new JsonOutput().toJson(msg.data))
 }
 
 // Send message to the Bridge

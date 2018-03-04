@@ -113,7 +113,7 @@ app.post('/gmqtt/doors',
         callback = req.body.callback;
         logger.debug("Received doors command; will call back to:",callback);
         res.set('Content-Type', 'application/json');
-        res.json({ doors: Object.keys(garageDoors)})
+        res.json({ doors: Object.keys(garageDoors), type: "doors"})
         res.end();
 });
 

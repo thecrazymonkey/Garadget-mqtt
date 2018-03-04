@@ -90,9 +90,17 @@ metadata {
 }
 
 void on() {
-    parent.childOn(device.deviceNetworkId)
 }
 
 void off() {
-    parent.childOff(device.deviceNetworkId)
+}
+
+void open() {
+}
+
+void close() {
+}
+
+def installed() {
+
 }
