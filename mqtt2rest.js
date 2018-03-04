@@ -70,7 +70,8 @@ mqtt_client.on('message', function (topic, message) {
                 name: device,
                 type: property,
                 value: message.toString()
-            }
+            },
+            localAddress: config.http.host
         }, function (error, response, body) {
             if (error) {
                 // @TODO handle the response from SmartThings
@@ -127,7 +128,7 @@ app.post('/gmqtt/command',
     }),function (req, res) {
         logger.debug("Request :", req.body)
         // try sending callback info in every command to avoid need for separate subscription call
-        callback = req.body.callback;
+        callback = req.body.callback ? req.body.callback : callback;
         // ignore unconfigured door or unsupported command
         if (garadgetCommands.includes(req.body.command) && config.mqtt.doors.includes(req.body.name)) {
             logger.debug("Received command for:", req.body.name, ";value:", req.body.command, ";will call back to:",callback);
@@ -149,7 +150,7 @@ app.post('/gmqtt/set-config',
         }
     }),function (req, res) {
         logger.debug("Request :", req.body)
-        callback = req.body.callback;
+        callback = req.body.callback ? req.body.callback : callback;
         // ignore unconfigured door
         if (config.mqtt.doors.includes(req.body.name)) {
             logger.debug("Received set-config for:", req.body.name, ";value:", JSON.stringify(req.body.value))

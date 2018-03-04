@@ -192,8 +192,18 @@ def setNetworkAddress() {
 def parse(String description) {
     log.debug "Parsing '${description}'"
     def msg = parseLanMessage(description)
-    log.debug "Pared '${msg}'"
-
+    log.debug "Parsed '${msg}'"
+    def receivedData = JsonOutput().toJson(msg.data)
+    def childId = receivedData?.name
+    def payloadType = receivedData?.type
+    def childInfo = receivedData?.value
+    log.debug "childId:'${childId}'; type:'${payloadType}'; info:'${childInfo}'"
+    switch (payloadType) {
+        case "status":
+            break
+        case "config":
+            break
+    }
 //    return createEvent(name: "message", value: new JsonOutput().toJson(msg.data))
 }
 
