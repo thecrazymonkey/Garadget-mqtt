@@ -167,12 +167,12 @@ def installed() {
 private void createChildDevices(List<String> doors) {
     log.debug "Setting doors: '${doors}'"
     def children = getChildDevices()
-    oldDoors = []
+    def oldDoors = []
     children.each { child ->
         if (doors.contains(child.deviceNetworkId))
             oldDoors.add(child.deviceNetworkId)
     }
-    newDoors = doors.minus(oldDoors)
+    def newDoors = doors.minus(oldDoors)
     log.debug "To create: '${newDoors}'"
 
     for (String door : newDoors) {
