@@ -210,7 +210,7 @@ def doorNotification(message) {
     def slurper = new JsonSlurper()
     def parsed = slurper.parseText(message)
     parsed.body.callback = "http://" + device.hub.getDataValue("localIP") + ":" + device.hub.getDataValue("localSrvPortTCP")
-    log.debug "Sending '${parsed}' to device '${ip}':'${port}'"
+    log.debug "Sending '${parsed}' to device '${ip}':'${port}'; mac:'${mac}'"
 
     def hubAction = new physicalgraph.device.HubAction(
             method: "POST",
