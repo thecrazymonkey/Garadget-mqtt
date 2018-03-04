@@ -164,7 +164,7 @@ def installed() {
     configure()
 }
 
-private void createChildDevices(String [] doors) {
+private void createChildDevices(List<String> doors) {
     log.debug "Setting doors: '${doors}'"
     for (String door : doors) {
         log.debug "Checking door: '${door}'"
