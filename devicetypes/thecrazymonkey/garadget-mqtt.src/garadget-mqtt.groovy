@@ -166,7 +166,7 @@ def installed() {
 
 private void createChildDevices(String [] doors) {
     log.debug "Setting doors: '${doors}'"
-    for (door : doors) {
+    for (String door : doors) {
         addChildDevice("Garadget door", "${door}", null, [completedSetup: true, label: "${device.displayName} (CH${i})", isComponent: true, componentName: "ch$i", componentLabel: "Channel $i"])
     }
 }
@@ -185,7 +185,7 @@ def parse(String description) {
     log.debug "Parsing '${description}'"
     def msg = parseLanMessage(description)
     log.debug "Parsed '${msg}'"
-    def receivedData = msg.data
+    def receivedData = msg.data?.json
     def childId = receivedData?.name
     def payloadType = receivedData?.type
     def childInfo = receivedData?.value
@@ -197,7 +197,7 @@ def parse(String description) {
             break
         case "doors":
             // received list of doors
-            createChildDevices(receivedData.doors)
+            createChildDevices(receivedData?.doors)
             break
     }
 }
