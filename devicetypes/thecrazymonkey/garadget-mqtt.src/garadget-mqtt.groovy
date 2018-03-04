@@ -164,9 +164,9 @@ def installed() {
     configure()
 }
 
-private void createChildDevices(String doors) {
+private void createChildDevices(String [] doors) {
     log.debug "Setting doors: '${doors}'"
-    for (String door : doors.split(',')) {
+    for (String door : doors) {
         log.debug "Checking door: '${door}'"
         addChildDevice("Garadget door", "${door}", null, [completedSetup: true, label: "${device.displayName} (CH${i})", isComponent: true, componentName: "ch$i", componentLabel: "Channel $i"])
     }
