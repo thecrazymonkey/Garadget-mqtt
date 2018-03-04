@@ -185,12 +185,13 @@ def parse(String description) {
     log.debug "Parsing '${description}'"
     def msg = parseLanMessage(description)
     log.debug "Parsed '${msg}'"
+    def slurper = new JsonSlurper()
+    def parsed = slurper.parseText(msg.body)
     def receivedData = msg.data
-    def receivedJson = msg.json
     def childId = receivedData?.name
     def payloadType = receivedData?.type
-    def childInfo = receivedData?.value
-    log.debug "childId:'${childId}'; type:'${payloadType}'; info:'${childInfo}'; json:'${receivedJson}'"
+    def childInfo = parsed?.value
+    log.debug "childId:'${childId}'; type:'${payloadType}'; info:'${childInfo}'; json:'${parsed}'"
     switch (payloadType) {
         case "status":
             break
@@ -198,8 +199,8 @@ def parse(String description) {
             break
         case "doors":
             // received list of doors
-            log.debug "Doors '${receivedJson?.doors}'"
-            createChildDevices(receivedJson?.doors)
+            log.debug "Doors '${parsed?.doors}'"
+            createChildDevices(parsed?.doors)
             break
     }
 }
