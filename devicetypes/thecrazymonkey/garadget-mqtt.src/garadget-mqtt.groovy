@@ -48,6 +48,7 @@ metadata {
         }
 
         main("configure")
+        childDeviceTiles("all")
     }
 }
 
