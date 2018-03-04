@@ -44,10 +44,10 @@ def deviceDiscovery() {
     def options = [:]
     def devices = getVerifiedDevices()
     devices.each {
-        def key = it.value.mac+it.value.deviceAddress
+        def key = it.value.mac
         def value = "GaradgetMQTT ${it.value.ssdpUSN.split(':')[1][-3..-1]}" //it.value.name ?: "Default"
         options["${key}"] = value
-        log.debug "║ ★ ${it.value.ssdpUSN} @ ${it.value.networkAddress}:${it.value.deviceAddress} (${it.value.mac}${it.value.deviceAddress})"
+        log.debug "║ ★ ${it.value.ssdpUSN} @ ${it.value.networkAddress}:${it.value.deviceAddress} (${it.value.mac})"
     }
     if(devices.size() == 0)
         log.debug "║ [no devices are verified]"
@@ -112,7 +112,7 @@ Map verifiedDevices() {
     def devices = getVerifiedDevices()
     def map = [:]
     devices.each {
-        def key = it.value.mac+it.value.deviceAddress
+        def key = it.value.mac
         def value = it.value.name ?: "${it.value.ssdpUSN.split(':')[1][-3..-1]}"
         map["${key}"] = value
     }
@@ -126,7 +126,7 @@ void verifyDevices() {
         int port = convertHexToInt(it.value.deviceAddress)
         String ip = convertHexToIP(it.value.networkAddress)
         String host = "${ip}:${port}"
-        log.debug "--☆ Verifying device ${it.value.mac}${it.value.deviceAddress} at ${host}${it.value.ssdpPath}"
+        log.debug "--☆ Verifying device ${it.value.mac} at ${host}${it.value.ssdpPath}"
         sendHubCommand(new physicalgraph.device.HubAction("""GET ${it.value.ssdpPath} HTTP/1.1\r\nHOST: $host\r\n\r\n""", physicalgraph.device.Protocol.LAN, host, [callback: deviceDescriptionHandler]))
     }
 }
@@ -146,17 +146,17 @@ def addDevices() {
     def devices = getDevices()
 
     selectedDevices.each { dni ->
-        def selectedDevice = devices.find { it.value.mac+it.value.deviceAddress == dni }
+        def selectedDevice = devices.find { it.value.mac == dni }
         def d
         if (selectedDevice) {
             d = getChildDevices()?.find {
-                it.deviceNetworkId == selectedDevice.value.mac+selectedDevice.value.deviceAddress
+                it.deviceNetworkId == selectedDevice.value.mac
             }
         }
 
         if (!d) {
-            log.debug "Creating Garadget MQTT Device with dni: ${selectedDevice.value.mac}${selectedDevice.value.deviceAddress}@${selectedDevice.value.networkAddress}:${selectedDevice.value.deviceAddress}"
-            def res = addChildDevice("thecrazymonkey", "Garadget MQTT", selectedDevice.value.mac+selectedDevice.value.deviceAddress, selectedDevice?.value.hub, [
+            log.debug "Creating Garadget MQTT Device with dni: ${selectedDevice.value.mac}@${selectedDevice.value.networkAddress}:${selectedDevice.value.deviceAddress}"
+            def res = addChildDevice("thecrazymonkey", "Garadget MQTT", selectedDevice.value.mac, selectedDevice?.value.hub, [
                     "label": selectedDevice?.value?.name ?: "Garadget MQTT",
                     "data": [
                         "mac": selectedDevice.value.mac,
@@ -182,7 +182,7 @@ def ssdpHandler(evt) {
     def devices = getDevices()
     devices.each {
         def star = it.value.verified ? "★" : "☆";
-        log.debug "---║ > ${star} ${it.value.ssdpUSN} @ ${it.value.networkAddress}:${it.value.deviceAddress} (${it.value.mac}${it.value.deviceAddress})"
+        log.debug "---║ > ${star} ${it.value.ssdpUSN} @ ${it.value.networkAddress}:${it.value.deviceAddress} (${it.value.mac})"
     }
     log.debug "---║ Devices at start of ssdpHandler: "
     String ssdpUSN = parsedEvent.ssdpUSN.toString()
@@ -191,7 +191,7 @@ def ssdpHandler(evt) {
         if (d.networkAddress != parsedEvent.networkAddress || d.deviceAddress != parsedEvent.deviceAddress) {
             d.networkAddress = parsedEvent.networkAddress
             d.deviceAddress = parsedEvent.deviceAddress
-            def child = getChildDevice(parsedEvent.mac+parsedEvent.deviceAddress)
+            def child = getChildDevice(parsedEvent.mac)
             if (child) {
                 child.sync(parsedEvent.networkAddress, parsedEvent.deviceAddress,parsedEvent.mac)
             }

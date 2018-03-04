@@ -164,9 +164,8 @@ private void createChildDevices() {
 def setNetworkAddress() {
     // Setting Network Device Id
     def mac = getDataValue("mac")
-    def port = getDataValue("port")
-    if (device.deviceNetworkId != mac+port) {
-        device.deviceNetworkId = mac+port
+    if (device.deviceNetworkId != mac) {
+        device.deviceNetworkId = mac
         log.debug "Device Network Id set to ${device.deviceNetworkId}"
     }
 }
