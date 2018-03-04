@@ -166,9 +166,18 @@ def installed() {
 
 private void createChildDevices(List<String> doors) {
     log.debug "Setting doors: '${doors}'"
-    for (String door : doors) {
-        log.debug "Checking door: '${door}'"
-        addChildDevice("Garadget door", "${door}", null, [completedSetup: true, label: "${device.displayName} (CH${i})", isComponent: true, componentName: "ch$i", componentLabel: "Channel $i"])
+    def children = getChildDevices()
+    oldDoors = []
+    children.each { child ->
+        if (doors.contains(child.deviceNetworkId))
+            oldDoors.add(child.deviceNetworkId)
+    }
+    newDoors = doors.minus(oldDoors)
+    log.debug "To create: '${newDoors}'"
+
+    for (String door : newDoors) {
+        log.debug "Adding door: '${door}'"
+        addChildDevice("Garadget door", "${door}", null, [completedSetup: true, label: "${door}", isComponent: true, componentName: "${door}", componentLabel: "${door}"])
     }
 }
 
