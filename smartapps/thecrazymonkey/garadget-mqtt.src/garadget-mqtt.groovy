@@ -177,7 +177,7 @@ def ssdpHandler(evt) {
     parsedEvent << ["hub":hub]
 
     log.debug "---╚═══════════════════════════════════════════════════════════════════════════════════════════════════"
-    //log.debug "---║ RAW PARSED EVENT: $parsedEvent"
+    log.debug "---║ RAW PARSED EVENT: $parsedEvent"
 
     def devices = getDevices()
     devices.each {
