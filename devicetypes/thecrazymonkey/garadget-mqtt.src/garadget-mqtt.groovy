@@ -182,7 +182,6 @@ private void createChildDevices() {
 // Store the MAC address as the device ID so that it can talk to SmartThings
 def setNetworkAddress() {
     // Setting Network Device Id
-    def mac = getDataValue("mac")
     if (device.deviceNetworkId != mac) {
         device.deviceNetworkId = mac
         log.debug "Device Network Id set to ${device.deviceNetworkId}"
@@ -210,8 +209,6 @@ def doorNotification(message) {
 
     def slurper = new JsonSlurper()
     def parsed = slurper.parseText(message)
-    def ip = convertHexToIP(getDataValue("ip"))
-    def port = convertHexToInt(getDataValue("port"))
     parsed.body.callback = "http://" + device.hub.getDataValue("localIP") + ":" + device.hub.getDataValue("localSrvPortTCP")
     log.debug "Sending '${parsed}' to device '${ip}':'${port}'"
 
