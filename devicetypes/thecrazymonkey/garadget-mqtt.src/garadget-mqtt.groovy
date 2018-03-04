@@ -219,7 +219,8 @@ def doorNotification(message) {
             headers: [
                     HOST          : "$ip:$port",
                     "Content-Type": "application/json"
-            ]
+            ],
+            dni: mac
     )
     hubAction
 }
