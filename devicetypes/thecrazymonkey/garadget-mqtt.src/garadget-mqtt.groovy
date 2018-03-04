@@ -164,9 +164,10 @@ def installed() {
     configure()
 }
 
-private void createChildDevices(String [] doors) {
+private void createChildDevices(String doors) {
     log.debug "Setting doors: '${doors}'"
-    for (String door : doors) {
+    for (String door : doors.split(',')) {
+        log.debug "Checking door: '${door}'"
         addChildDevice("Garadget door", "${door}", null, [completedSetup: true, label: "${device.displayName} (CH${i})", isComponent: true, componentName: "ch$i", componentLabel: "Channel $i"])
     }
 }
@@ -185,13 +186,12 @@ def parse(String description) {
     log.debug "Parsing '${description}'"
     def msg = parseLanMessage(description)
     log.debug "Parsed '${msg}'"
-    def slurper = new JsonSlurper()
-    def parsed = slurper.parseText(msg.body)
     def receivedData = msg.data
+    def receivedJson = msg.json
     def childId = receivedData?.name
     def payloadType = receivedData?.type
-    def childInfo = parsed?.value
-    log.debug "childId:'${childId}'; type:'${payloadType}'; info:'${childInfo}'; json:'${parsed}'"
+    def childInfo = receivedData?.value
+    log.debug "childId:'${childId}'; type:'${payloadType}'; info:'${childInfo}'; json:'${receivedJson}'"
     switch (payloadType) {
         case "status":
             break
@@ -199,8 +199,8 @@ def parse(String description) {
             break
         case "doors":
             // received list of doors
-            log.debug "Doors '${parsed?.doors}'"
-            createChildDevices(parsed?.doors)
+            log.debug "Doors '${receivedJson?.doors}'"
+            createChildDevices(receivedJson?.doors)
             break
     }
 }
