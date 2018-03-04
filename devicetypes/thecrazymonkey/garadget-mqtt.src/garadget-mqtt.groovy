@@ -193,7 +193,7 @@ def parse(String description) {
     log.debug "Parsing '${description}'"
     def msg = parseLanMessage(description)
     log.debug "Parsed '${msg}'"
-    def receivedData = JsonOutput().toJson(msg.data)
+    def receivedData = msg.data
     def childId = receivedData?.name
     def payloadType = receivedData?.type
     def childInfo = receivedData?.value
