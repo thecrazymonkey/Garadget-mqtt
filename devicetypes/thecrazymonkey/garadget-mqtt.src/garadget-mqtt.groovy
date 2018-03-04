@@ -185,7 +185,7 @@ def parse(String description) {
     log.debug "Parsing '${description}'"
     def msg = parseLanMessage(description)
     log.debug "Parsed '${msg}'"
-    def receivedData = msg.data
+    def receivedData = msg.body
     def childId = receivedData?.name
     def payloadType = receivedData?.type
     def childInfo = receivedData?.value
