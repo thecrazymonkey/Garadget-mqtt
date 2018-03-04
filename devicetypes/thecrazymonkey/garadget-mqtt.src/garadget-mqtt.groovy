@@ -185,11 +185,12 @@ def parse(String description) {
     log.debug "Parsing '${description}'"
     def msg = parseLanMessage(description)
     log.debug "Parsed '${msg}'"
-    def receivedData = msg.body
+    def receivedData = msg.data
+    def receivedJson = msg.json
     def childId = receivedData?.name
     def payloadType = receivedData?.type
     def childInfo = receivedData?.value
-    log.debug "childId:'${childId}'; type:'${payloadType}'; info:'${childInfo}'"
+    log.debug "childId:'${childId}'; type:'${payloadType}'; info:'${childInfo}'; json:'${receivedJson}'"
     switch (payloadType) {
         case "status":
             break
@@ -197,8 +198,8 @@ def parse(String description) {
             break
         case "doors":
             // received list of doors
-            log.debug "Doors '${receivedData?.doors}'"
-            createChildDevices(receivedData?.doors)
+            log.debug "Doors '${receivedJson?.doors}'"
+            createChildDevices(receivedJson?.doors)
             break
     }
 }
