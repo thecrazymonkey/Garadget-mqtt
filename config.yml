@@ -1,12 +1,12 @@
 mqtt:
-  host: "192.168.1.39"
+  host: "192.168.1.3"
   port: 1883
   doors: ["Garage1", "Garage2"]
   prefix: "garadget"
 http:
-  host: localhost
+  host: 192.168.1.35
   port: 8081
-smartthings:
-  oauth:
 application:
   logLevel: "debug"
+ssdp:
+   enabled: false

@@ -167,17 +167,19 @@ const server = app.listen(config.http.port, config.http.host, function () {
     logger.debug("Garadget mqtt2rest listening at http://%s:%s", server.address().address, server.address().port)
 });
 
-//Define SSDP Server Configuration
-const ssdpServer = new SSDP({
-  location: 'http://' + require('ip').address() + ':'+config.http.port+'/desc.xml',
-  sourcePort: 1900,
-  ssdpTtl: 3,
-});
+if (config.ssdp.enabled) {
+    //Define SSDP Server Configuration
+    const ssdpServer = new SSDP({
+        location: 'http://' + require('ip').address() + ':'+config.http.port+'/desc.xml',
+        sourcePort: 1900,
+        ssdpTtl: 3,
+    });
 
-//Define SSDP USN type
-ssdpServer.addUSN('urn:thecrazymonkey-com:device:GaradgetMQTT:1');
+    //Define SSDP USN type
+    ssdpServer.addUSN('urn:thecrazymonkey-com:device:GaradgetMQTT:1');
 
-//Start SSDP Server
-ssdpServer.start(function(){
-  logger.debug('Fired up the SSDP Server for network discovery...')
-});
+    //Start SSDP Server
+    ssdpServer.start(function(){
+        logger.debug('Fired up the SSDP Server for network discovery...')
+    });
+}

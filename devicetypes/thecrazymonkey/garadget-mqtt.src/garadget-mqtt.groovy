@@ -34,14 +34,25 @@ metadata {
     }
     simulator {
     }
+    preferences {
+        input "ip", "text", title: "MQTT Gateway IP Address", description: "IP Address in form 192.168.1.226", required: true, displayDuringSetup: true
+        input "port", "text", title: "MQTT Gateway Port", description: "port in form of 8090", required: true, displayDuringSetup: true
+        input "mac", "text", title: "MQTT Gateway MAC Addr", description: "MAC Address in form of 02A1B2C3D4E5", required: true, displayDuringSetup: true
+    }
     tiles(scale: 2) {
         standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat", height: 2, width: 2) {
             state "default", action:"refresh.refresh", icon:"st.secondary.refresh"
         }
-        main("refresh")
+        standardTile("configure", "device.configure", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
+            state "configure", label:'Configure', action:"configuration.configure", icon:"st.secondary.tools"
+        }
+
+        main("configure")
     }
 }
 
+
+// used with ssdp
 def sync(ip, port, mac) {
     log.debug "Executing 'sync': ${ip}:${port}:${mac}"
     def existingIp = getDataValue("ip")
@@ -61,15 +72,23 @@ def sync(ip, port, mac) {
 
 def refresh() {
     log.debug "Executing 'refresh'"
-    log.debug "Device info: ${device.data.mac}"
     getDoors()
 }
 
 def configure() {
-    log.debug "Resetting Sensor Parameters to SmartThings Compatible Defaults"
+    log.debug "Resetting configure"
+    getDoors()
 //    SetConfigCommand()
 }
 
+def updateDeviceNetworkID() {
+    log.debug "Executing 'updateDeviceNetworkID'"
+    if(device.deviceNetworkId!=mac) {
+        log.debug "setting deviceNetworkID = ${mac}"
+        device.setDeviceNetworkId("${mac}")
+    }
+    refresh()
+}
 private getDeviceDetails() {
     def fullDni = device.deviceNetworkId
     return fullDni
