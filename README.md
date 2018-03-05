@@ -1,6 +1,7 @@
-Garadget connector for Smartthings using MQTT
+# Garadget connector for Smartthings using MQTT
 
-# mqtt2rest -- An MQTT to REST Bridge for Garadget
+Using a bridge:
+mqtt2rest -- An MQTT to REST Bridge for Garadget
 
 
 Usage:
@@ -13,6 +14,7 @@ Diagram:
     | Garadget (MQTT Client)   |<-->| MQTT Broker |<-->| mqtt2rest |<--->| SmartThings |
     ----------------------------    ---------------    -------------     ---------------
 
+.. and SmartThings composite DTH
 
 1. Install and configure MQTT broker
 2. Setup mqttrest - can be run standalone or on RB Pi within a Docker container, Dockerfile is included
