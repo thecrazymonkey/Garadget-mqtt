@@ -112,6 +112,7 @@ metadata {
 
 void poll() {
     parent.getStatus(device.deviceNetworkId)
+    parent.getConfig(device.deviceNetworkId)
 }
 
 void on() {
@@ -128,6 +129,7 @@ void close() {
 
 def installed() {
     parent.getStatus(device.deviceNetworkId)
+    parent.getConfig(device.deviceNetworkId)
 }
 
 def generateEvent(name, jsonValue) {
