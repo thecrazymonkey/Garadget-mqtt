@@ -252,7 +252,7 @@ def doorNotification(message) {
     def parsed = slurper.parseText(message)
     log.debug "Sending '${parsed}' to device '${ip}':'${port}'; mac:'${mac}'"
 
-    sendHubCommend(new physicalgraph.device.HubAction(
+    sendHubCommand(new physicalgraph.device.HubAction(
             method: "POST",
             path: parsed.path,
             body: parsed.body,
