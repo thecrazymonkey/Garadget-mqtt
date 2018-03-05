@@ -40,6 +40,7 @@ metadata {
         input "mac", "text", title: "MQTT Gateway MAC Addr", description: "MAC Address in form of 02A1B2C3D4E5", required: true, displayDuringSetup: true
     }
     tiles(scale: 2) {
+        childDeviceTiles("all")
         standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat", height: 2, width: 2) {
             state "default", label: 'Refresh', action:"refresh.refresh", icon:"st.secondary.refresh"
         }
@@ -57,7 +58,6 @@ metadata {
                     ]
             )
         }
-        childDeviceTiles("all")
     }
 }
 
@@ -187,7 +187,7 @@ private void createChildDevices(List<String> doors) {
 
     for (String door : newDoors) {
         log.debug "Adding door: '${door}'"
-        addChildDevice("Garadget door", "${door}", null, [completedSetup: true, label: "${door}", isComponent: true, componentName: "${door}", componentLabel: "${door}"])
+        addChildDevice("Garadget door", "${door}", null, [completedSetup: true, label: "${door}", isComponent: false, componentName: "${door}", componentLabel: "${door}"])
     }
 }
 
