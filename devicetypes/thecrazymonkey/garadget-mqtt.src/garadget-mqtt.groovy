@@ -115,7 +115,7 @@ def stop(String dni) {
 
 def getStatus(String dni) {
     log.debug "Executing - getStatus()"
-    def jsonbody = '{"path": "/gmqtt/command", "body": {"command": "get-status","name": "${dni}"}}'
+    def jsonbody = '{"path": "/gmqtt/command", "body": {}}'
     log.debug "Executing - getStatus() - ${jsonbody}"
     doorNotification(jsonbody)
 }
