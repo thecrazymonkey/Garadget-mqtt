@@ -127,7 +127,7 @@ void close() {
 }
 
 def installed() {
-
+    parent.getStatus(device.deviceNetworkId)
 }
 
 def generateEvent(name, jsonValue) {

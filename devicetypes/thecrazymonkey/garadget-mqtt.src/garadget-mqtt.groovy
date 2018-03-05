@@ -1,5 +1,5 @@
 /**
- *  Garadget MQTT device
+ *  Garadget MQTT device - parent gateway
  *
  * 	Author
  *   - ivan.kunz@gmail.com
@@ -115,7 +115,7 @@ def stop(String dni) {
 
 def getStatus(String dni) {
     log.debug "Executing - getStatus()"
-    def jsonbody = new groovy.json.JsonOutput().toJson([path: "/gmqtt/command", body: ["command": "get-status","name": ${dni}]])
+    def jsonbody = new groovy.json.JsonOutput().toJson([path: "/gmqtt/command", body: ["command": "get-status","name": "${dni}"]])
     log.debug "Executing - getStatus() - ${jsonbody}"
     doorNotification(jsonbody)
 }
