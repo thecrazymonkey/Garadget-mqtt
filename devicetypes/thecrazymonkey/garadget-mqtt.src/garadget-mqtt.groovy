@@ -162,6 +162,7 @@ def closeCommand(String dni) {
 def installed() {
     log.debug "Executing - 'installed()'"
     configure()
+    runEvery5minutes("refresh")
 }
 
 private void createChildDevices(List<String> doors) {
