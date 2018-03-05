@@ -16,8 +16,8 @@
  *  for the specific language governing permissions and limitations under the License.
  */
 
+
 import groovy.json.JsonSlurper
-import groovy.json.JsonOutput
 
 metadata {
     definition(name: "Garadget MQTT Door", namespace: "thecrazymonkey", author: "Ivan Kunz") {
@@ -39,21 +39,14 @@ metadata {
         attribute "ver", "string"
 
         command "stop"
-        command "statusCommand"
-        command "setConfigCommand"
-        command "doorConfigCommand"
-        command "netConfigCommand"
+        command "generateEvent", ["string", "string"]
     }
     preferences {
         input("prdt", "text", title: "sensor scan interval in mS (default: 1000)")
         input("pmtt", "text", title: "door moving time in mS(default: 10000)")
         input("prlt", "text", title: "button press time mS (default: 300)")
         input("prlp", "text", title: "delay between consecutive button presses in mS (default: 1000)")
-        input("psrr", "text", title: "number of sensor reads used in averaging (default: 3)")
         input("psrt", "text", title: "reflection threshold below which the door is considered open (default: 25)")
-        input("paot", "text", title: "alert for open timeout in seconds (default: 320)")
-        input("pans", "text", title: " alert for night time start in minutes from midnight (default: 1320)")
-        input("pane", "text", title: " alert for night time end in minutes from midnight (default: 360)")
     }
     tiles(scale: 2) {
         multiAttributeTile(name: "status", type: "generic", width: 6, height: 4) {
@@ -92,8 +85,8 @@ metadata {
         standardTile("stop", "stop") {
             state "default", label: "", action: "stop", icon: "http://cdn.device-icons.smartthings.com/sonos/stop-btn@2x.png"
         }
-        valueTile("ip", "ip", decoration: "flat", width: 2, height: 1) {
-            state "ip", label: 'IP Address\r\n${currentValue}'
+        valueTile("brightness", "brightness", decoration: "flat", width: 2, height: 1) {
+            state "brightness", label: 'Brightness\r\n${currentValue}'
         }
         valueTile("ssid", "ssid", decoration: "flat", width: 2, height: 1) {
             state "ssid", label: 'Wifi SSID\r\n${currentValue}'
@@ -106,44 +99,75 @@ metadata {
         }
 
         main "status"
-        details(["status", "contact", "reflection", "ver", "configure", "lastAction", "rssi", "stop", "ip", "ssid", "refresh"])
+        details(["status", "contact", "reflection", "ver", "configure", "lastAction", "rssi", "stop", "brightness", "ssid", "refresh"])
     }
 }
 
 void poll() {
+    log.debug ("Executing - poll()")
     parent.getStatus(device.deviceNetworkId)
     parent.getConfig(device.deviceNetworkId)
 }
 
-void on() {
+void refresh() {
+    log.debug ("Executing - refresh()")
+    poll()
 }
 
-void off() {
+def on() {
+    log.debug ("Executing - on()")
+    openCommand()
+}
+
+def off() {
+    log.debug ("Executing - off()")
+    closeCommand()
+}
+
+def openCommand(){
+    log.debug "Executing - 'openCommand()'"
+    parent.openCommand(device.deviceNetworkId)
+}
+
+def closeCommand(){
+    log.debug "Executing - 'closeCommand()'"
+    parent.closeCommand(device.deviceNetworkId)
 }
 
 void open() {
+    log.debug ("Executing - open()")
+    openCommand()
 }
 
 void close() {
+    log.debug ("Executing - close()")
+    closeCommand()
 }
 
 def installed() {
+    log.debug ("Executing - installed()")
     parent.getStatus(device.deviceNetworkId)
     parent.getConfig(device.deviceNetworkId)
+}
+
+def stop(){
+    log.debug "Executing - 'stop()'"
+    parent.stopCommand(device.deviceNetworkId)
 }
 
 def generateEvent(name, jsonValue) {
     // Update device - complex handler for all responses
-    log.debug("generateEvent: '${name}'; '${jsonValue}'")
+    log.debug ("Executing - generateEvent()")
     def slurper = new JsonSlurper()
     def parsed = slurper.parseText(jsonValue)
-    log.debug("generateEvent - parsed: '${parsed}'")
+    log.debug("generateEvent(): '${name}'; '${parsed}'")
     switch (name) {
         case "status":
             sendEvent(name: name, value: parsed.status)
             sendEvent(name: 'contact', value: parsed.status)
             sendEvent(name: 'lastAction', value: parsed.time)
             sendEvent(name: 'reflection', value: parsed.sensor)
+            sendEvent(name: 'brightness', value: parsed.bright)
             sendEvent(name: 'rssi', value: parsed.signal)
             break
         case "config":
@@ -153,209 +177,7 @@ def generateEvent(name, jsonValue) {
     }
 }
 
-
-
-/*
-
-private parseNetConfigResponse(resp) {
-    log.debug("Executing parseResponse: "+resp.data)
-    log.debug("Output status: "+resp.status)
-    if(resp.status == 200) {
-        log.debug("returnedresult: "+resp.data.result)
-        def results = (resp.data.result).tokenize('|')
-        def ipvalues = (results[0]).tokenize('=')
-        def snetvalues = (results[1]).tokenize('=')
-        def dgwvalues = (results[2]).tokenize('=')
-        def macvalues = (results[3]).tokenize('=')
-        def ssidvalues = (results[4]).tokenize('=')
-        def ip = ipvalues[1]
-        sendEvent(name: 'ip', value: ip, displayed: false)
-        log.debug("IP Address: "+ip)
-        def snet = snetvalues[1]
-        log.debug("Subnet Mask: "+snet)
-        def dgw = dgwvalues[1]
-        log.debug("Default Gateway: "+dgw)
-        def mac = macvalues[1]
-        log.debug("Mac Address: "+mac)
-        def ssid = ssidvalues[1]
-        sendEvent(name: 'ssid', value: ssid, displayed: false)
-        log.debug("Wifi SSID : "+ssid)
-    }else if(resp.status == 201){
-        log.debug("Something was created/updated")
-    }
+def configure() {
+    log.debug ("Executing - configure()")
+    parent.setConfig(device.deviceNetworkId, prdt, pmtt, prlt, prlp, psrt)
 }
-
-private parseResponse(resp) {
-    log.debug("Executing parseResponse: "+resp.data)
-    log.debug("Output status: "+resp.status)
-    if(resp.status == 200) {
-        log.debug("Executing parseResponse.successTrue")
-        def id = resp.data.id
-        def name = resp.data.name
-        def connected = resp.data.connected
-        def returnValue = resp.data.return_value
-    }else if(resp.status == 201){
-        log.debug("Something was created/updated")
-    }
-}
-
-private getDeviceDetails() {
-    def fullDni = device.deviceNetworkId
-    return fullDni
-}
-
-private sendCommand(method, args = []) {
-    def DefaultUri = "https://api.particle.io"
-    def cdni = getDeviceDetails().tokenize(':')
-    def deviceId = cdni[0]
-    def token = cdni[1]
-    def methods = [
-            'doorStatus': [
-                    uri: "${DefaultUri}",
-                    path: "/v1/devices/${deviceId}/doorStatus",
-                    requestContentType: "application/json",
-                    query: [access_token: token]
-            ],
-            'doorConfig': [
-                    uri: "${DefaultUri}",
-                    path: "/v1/devices/${deviceId}/doorConfig",
-                    requestContentType: "application/json",
-                    query: [access_token: token]
-            ],
-            'netConfig': [
-                    uri: "${DefaultUri}",
-                    path: "/v1/devices/${deviceId}/netConfig",
-                    requestContentType: "application/json",
-                    query: [access_token: token]
-            ],
-            'setState': [
-                    uri: "${DefaultUri}",
-                    path: "/v1/devices/${deviceId}/setState",
-                    requestContentType: "application/json",
-                    query: [access_token: token],
-                    body: args[0]
-            ],
-            'setConfig': [
-                    uri: "${DefaultUri}",
-                    path: "/v1/devices/${deviceId}/setConfig",
-                    requestContentType: "application/json",
-                    query: [access_token: token],
-                    body: args[0]
-            ]
-    ]
-
-    def request = methods.getAt(method)
-
-    log.debug "Http Params ("+request+")"
-
-    try{
-        log.debug "Executing 'sendCommand'"
-
-        if (method == "doorStatus"){
-            log.debug "calling doorStatus Method"
-            httpGet(request) { resp ->
-                parseDoorStatusResponse(resp)
-            }
-        }else if (method == "doorConfig"){
-            log.debug "calling doorConfig Method"
-            httpGet(request) { resp ->
-                parseDoorConfigResponse(resp)
-            }
-        }else if (method == "netConfig"){
-            log.debug "calling netConfig Method"
-            httpGet(request) { resp ->
-                parseNetConfigResponse(resp)
-            }
-        }else if (method == "setState"){
-            log.debug "calling setState Method"
-            httpPost(request) { resp ->
-                parseResponse(resp)
-            }
-        }else if (method == "setConfig"){
-            log.debug "calling setConfig Method"
-            httpPost(request) { resp ->
-                parseResponse(resp)
-            }
-        }else{
-            httpGet(request)
-        }
-    } catch(Exception e){
-        log.debug("___exception: " + e)
-    }
-}
-
-
-def on() {
-
-    log.debug ("Executing - on()")
-    openCommand()
-}
-
-def off() {
-
-    log.debug ("Executing - off()")
-    closeCommand()
-}
-
-def stop(){
-    log.debug "Executing - stop() - 'sendCommand.setState'"
-    def jsonbody = new groovy.json.JsonOutput().toJson(arg:"stop")
-
-    sendCommand("setState",[jsonbody])
-    statusCommand()
-}
-
-def statusCommand(){
-    log.debug "Executing - statusCommand() - 'sendCommand.statusCommand'"
-    sendCommand("doorStatus",[])
-}
-
-def openCommand(){
-    log.debug "Executing - openCommand() - 'sendCommand.setState'"
-    def jsonbody = new groovy.json.JsonOutput().toJson(arg:"open")
-    sendCommand("setState",[jsonbody])
-}
-
-def closeCommand(){
-    log.debug "Executing - closeCommand() - 'sendCommand.setState'"
-    def jsonbody = new groovy.json.JsonOutput().toJson(arg:"close")
-    sendCommand("setState",[jsonbody])
-}
-
-def open() {
-    log.debug "Executing - open() - 'on'"
-    on()
-}
-
-def close() {
-    log.debug "Executing - close() - 'off'"
-    off()
-}
-
-def doorConfigCommand(){
-    log.debug "Executing doorConfigCommand() - 'sendCommand.doorConfig'"
-    sendCommand("doorConfig",[])
-}
-
-def SetConfigCommand(){
-    def crdt = prdt ?: 1000
-    def cmtt = pmtt ?: 10000
-    def crlt = prlt ?: 300
-    def crlp = prlp ?: 1000
-    def csrr = psrr ?: 3
-    def csrt = psrt ?: 25
-    def caot = paot ?: 320
-    def cans = pans ?: 1320
-    def cane = pane ?: 360
-    log.debug "Executing 'sendCommand.setConfig'"
-    def jsonbody = new groovy.json.JsonOutput().toJson(arg:"rdt=" + crdt +"|mtt=" + cmtt + "|rlt=" + crlt + "|rlp=" + crlp +"|srr=" + csrr + "|srt=" + csrt)
-    sendCommand("setConfig",[jsonbody])
-    jsonbody = new groovy.json.JsonOutput().toJson(arg:"aot=" + caot + "|ans=" + cans + "|ane=" + cane)
-    sendCommand("setConfig",[jsonbody])
-}
-
-def netConfigCommand(){
-    log.debug "Executing 'sendCommand.netConfig'"
-    sendCommand("netConfig",[])
-}
-*/

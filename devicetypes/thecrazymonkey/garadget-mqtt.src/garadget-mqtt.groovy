@@ -16,21 +16,13 @@
  *  for the specific language governing permissions and limitations under the License.
  */
 
-import groovy.json.JsonSlurper
-import groovy.json.JsonOutput
 
+import groovy.json.JsonSlurper
 
 metadata {
     definition(name: "Garadget MQTT", namespace: "thecrazymonkey", author: "Ivan Kunz") {
-        capability "Switch"
-        capability "Contact Sensor"
-        capability "Signal Strength"
-        capability "Actuator"
-        capability "Sensor"
         capability "Refresh"
         capability "Polling"
-        capability "Configuration"
-        capability "Garage Door Control"
     }
     simulator {
     }
@@ -40,21 +32,18 @@ metadata {
         input "mac", "text", title: "MQTT Gateway MAC Addr", description: "MAC Address in form of 02A1B2C3D4E5", required: true, displayDuringSetup: true
     }
     tiles(scale: 2) {
-        childDeviceTiles("all")
+//        childDeviceTiles("all")
         standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat", height: 2, width: 2) {
             state "default", label: 'Refresh', action:"refresh.refresh", icon:"st.secondary.refresh"
         }
-        standardTile("configure", "device.configure", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
-            state "configure", label:'Configure', action:"configuration.configure", icon:"st.secondary.tools"
-        }
-        main("configure")
+        main("refresh")
     }
 }
 
 
-// used with ssdp
+// used with ssdp - TODO fixing if ssdp is going to be used
 def sync(ip, port, mac) {
-    log.debug "Executing 'sync': ${ip}:${port}:${mac}"
+    log.debug "Executing 'sync()': ${ip}:${port}:${mac}"
     def existingIp = getDataValue("ip")
     def existingPort = getDataValue("port")
     log.debug "Executing 'sync' existing : ${existingIp}:${existingPort}"
@@ -89,32 +78,9 @@ def updateDeviceNetworkID() {
     }
     refresh()
 }
-private getDeviceDetails() {
-    def fullDni = device.deviceNetworkId
-    return fullDni
-}
-
-def on(String dni) {
-
-    log.debug("Executing - on()")
-    openCommand(dni)
-}
-
-def off(String dni) {
-
-    log.debug("Executing - off()")
-    closeCommand(dni)
-}
-
-def stop(String dni) {
-    log.debug "Executing - stop() - 'sendCommand.setState'"
-    def jsonbody = new groovy.json.JsonOutput().toJson(arg: "stop")
-
-    doorNotification("setState", [jsonbody])
-}
 
 def getStatus(String dni) {
-    log.debug "Executing - getStatus()"
+    log.debug "Executing - 'getStatus()'"
     def json = new groovy.json.JsonOutput().toJson([
             path: "/gmqtt/command",
             body: [
@@ -122,12 +88,12 @@ def getStatus(String dni) {
                     "name": "${dni}"
             ]
     ])
-    log.debug "Executing - getStatus() - ${json}"
+    log.debug "Executing - 'getStatus()' - '${json}'"
     doorNotification(json)
 }
 
 def getConfig(String dni) {
-    log.debug "Executing - getConfig()"
+    log.debug "Executing - 'getConfig()'"
     def json = new groovy.json.JsonOutput().toJson([
             path: "/gmqtt/command",
             body: [
@@ -135,63 +101,80 @@ def getConfig(String dni) {
                     "name": "${dni}"
             ]
     ])
-    log.debug "Executing - getConfig() - ${json}"
+    log.debug "Executing - 'getConfig()' - '${json}'"
     doorNotification(json)
 }
 
 def getDoors() {
-    log.debug "Executing - getDoors()"
+    log.debug "Executing - 'getDoors()'"
     def json = new groovy.json.JsonOutput().toJson([
             path: "/gmqtt/doors",
             body: [
                     "callback": "http://" + device.hub.getDataValue("localIP") + ":" + device.hub.getDataValue("localSrvPortTCP")
             ]
     ])
-    log.debug "Executing - getDoors() - ${json}"
+    log.debug "Executing - 'getDoors()' - '${json}'"
     doorNotification(json)
 }
 
+def setConfig(String dni, prdt, pmtt, prlt, prlp, psrt){
+    def crdt = prdt ?: 1000
+    def cmtt = pmtt ?: 10000
+    def crlt = prlt ?: 300
+    def crlp = prlp ?: 1000
+    def csrt = psrt ?: 25
+    log.debug "Executing - 'setConfig()'"
+    def json = new groovy.json.JsonOutput().toJson([
+            path: "/gmqtt/set-config",
+            body: [
+                    "name": "${dni}",
+                    "value": [
+                        "rdt": "${crdt}",
+                        "mtt": "${cmtt}",
+                        "rlt": "${crlt}",
+                        "rlp": "${crlp}",
+                        "srt": "${csrt}"
+                    ]
+            ]
+    ])
+    log.debug "Executing - 'setConfig()' - '${json}'"
+    doorNotification(json)
+}
+
+
 def openCommand(String dni) {
-    log.debug "Executing - openCommand() - 'sendCommand.setState'"
-    def jsonbody = new groovy.json.JsonOutput().toJson(arg: "open")
-    doorNotification("setState", [jsonbody])
+    log.debug "Executing - 'openCommand()'"
+    def json = new groovy.json.JsonOutput().toJson([
+            path: "/gmqtt/command",
+            body: [
+                    "command": "open",
+                    "name": "${dni}"
+            ]
+    ])
+    log.debug "Executing - 'setConfig()' - '${json}'"
+    doorNotification(json)
 }
 
 def closeCommand(String dni) {
-    log.debug "Executing - closeCommand() - 'sendCommand.setState'"
-    def jsonbody = new groovy.json.JsonOutput().toJson(arg: "close")
-    doorNotification("setState", [jsonbody])
-}
-
-def open(String dni) {
-    log.debug "Executing - open() - 'on'"
-    on(dni)
-}
-
-def close(String dni) {
-    log.debug "Executing - close() - 'off'"
-    off(dni)
-}
-
-def doorConfigCommand() {
-    log.debug "Executing doorConfigCommand() - 'sendCommand.doorConfig'"
-    doorNotification("doorConfig", [])
-}
-
-
-def netConfigCommand() {
-    log.debug "Executing 'sendCommand.netConfig'"
-    doorNotification("netConfig", [])
+    log.debug "Executing - 'closeCommand()'"
+    def json = new groovy.json.JsonOutput().toJson([
+            path: "/gmqtt/command",
+            body: [
+                    "command": "close",
+                    "name": "${dni}"
+            ]
+    ])
+    doorNotification(json)
 }
 
 
 def installed() {
-    log.debug "Called installed"
+    log.debug "Executing - 'installed()'"
     configure()
 }
 
 private void createChildDevices(List<String> doors) {
-    log.debug "Setting doors: '${doors}'"
+    log.debug "Executing - 'createChildDevices()'"
     def children = getChildDevices()
     def oldDoors = []
     children.each { child ->
@@ -199,10 +182,10 @@ private void createChildDevices(List<String> doors) {
             oldDoors.add(child.deviceNetworkId)
     }
     def newDoors = doors.minus(oldDoors)
-    log.debug "To create: '${newDoors}'"
+    log.debug "createChildDevices():To create: '${newDoors}'"
 
     for (String door : newDoors) {
-        log.debug "Adding door: '${door}'"
+        log.debug "createChildDevices():Adding door: '${door}'"
         addChildDevice("Garadget MQTT door", "${door}", null, [completedSetup: true, label: "${door} (MQTT)", isComponent: false, componentName: "${door}", componentLabel: "${door} (MQTT)"])
     }
 }
@@ -212,7 +195,7 @@ def setNetworkAddress() {
     // Setting Network Device Id
     if (device.deviceNetworkId != mac) {
         device.deviceNetworkId = mac
-        log.debug "Device Network Id set to ${device.deviceNetworkId}"
+        log.debug "setNetworkAddress():Device Network Id set to ${device.deviceNetworkId}"
     }
 }
 
@@ -255,16 +238,16 @@ def parse(String description) {
 // Send message to the Bridge
 def doorNotification(message) {
     if (device.hub == null) {
-        log.error "Hub is null, must set the hub in the device settings so we can get local hub IP and port"
+        log.error "doorNotification():Hub is null, must set the hub in the device settings so we can get local hub IP and port"
         return
     }
 
-    log.debug "Sending '${message}' to device"
+    log.debug "Executing - 'doorNotification()'"
     setNetworkAddress()
 
     def slurper = new JsonSlurper()
     def parsed = slurper.parseText(message)
-    log.debug "Sending '${parsed}' to device '${ip}':'${port}'; mac:'${mac}'"
+    log.debug "doorNotification():Sending '${parsed}' to device '${ip}':'${port}'; mac:'${mac}'"
 
     sendHubCommand(new physicalgraph.device.HubAction(
             method: "POST",
