@@ -111,8 +111,7 @@ metadata {
 }
 
 void poll() {
-//    parent.getStatus(device.deviceNetworkId)
-    parent.getDoors()
+    parent.getStatus(device.deviceNetworkId)
 }
 
 void on() {
