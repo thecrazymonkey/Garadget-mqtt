@@ -135,6 +135,7 @@ def generateEvent(name, jsonValue) {
     log.debug("generateEvent: '${name}'; '${jsonValue}'")
     def slurper = new JsonSlurper()
     def parsed = slurper.parseText(jsonValue)
+    log.debug("generateEvent - parsed: '${parsed}'")
     switch (name) {
         case "status":
             value = parsed?.status
