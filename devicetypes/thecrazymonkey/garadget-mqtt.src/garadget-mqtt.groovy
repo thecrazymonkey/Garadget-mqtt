@@ -115,14 +115,14 @@ def stop(String dni) {
 
 def getStatus(String dni) {
     log.debug "Executing - getStatus()"
-    def jsonbody = new groovy.json.JsonOutput().toJson([path: "/gmqtt/command", body: ["command": "get-status","name": "${dni}"]])
+    def jsonbody = '{"path": "/gmqtt/command", "body": {"command": "get-status","name": "${dni}"}}'
     log.debug "Executing - getStatus() - ${jsonbody}"
     doorNotification(jsonbody)
 }
 
 def getDoors() {
     log.debug "Executing - getDoors()"
-    def jsonbody = new groovy.json.JsonOutput().toJson([path: "/gmqtt/doors", body: {}])
+    def jsonbody = '{"path": "/gmqtt/doors", "body": {}}'
     log.debug "Executing - getDoors() - ${jsonbody}"
     doorNotification(jsonbody)
 }
