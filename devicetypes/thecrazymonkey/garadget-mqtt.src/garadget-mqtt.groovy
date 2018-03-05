@@ -70,15 +70,6 @@ def configure() {
 //    SetConfigCommand()
 }
 
-def updateDeviceNetworkID() {
-    log.debug "Executing 'updateDeviceNetworkID'"
-    if(device.deviceNetworkId!=mac) {
-        log.debug "setting deviceNetworkID = ${mac}"
-        device.setDeviceNetworkId("${mac}")
-    }
-    refresh()
-}
-
 def getStatus(String dni) {
     log.debug "Executing - 'getStatus()'"
     def json = new groovy.json.JsonOutput().toJson([
@@ -202,9 +193,9 @@ def setNetworkAddress() {
 // Parse events from the Bridge
 def parse(String description) {
     def results = []
-    log.debug "Parsing '${description}'"
+    log.debug "Executing - 'parse()'"
     def msg = parseLanMessage(description)
-    log.debug "Parsed '${msg}'"
+    log.debug "parse():Parsed '${msg}'"
     def receivedData = msg.data
     def receivedJson = msg.json
     def childId = receivedData?.name
@@ -218,14 +209,13 @@ def parse(String description) {
             childDevices.each {
                 if (it.deviceNetworkId == childId) {
                     childDevice = it
-                    log.debug "Found a match!!!"
                 }
             }
             childDevice.generateEvent(payloadType, receivedJson?.value)
             break
         case "doors":
             // received list of doors
-            log.debug "Doors '${receivedJson?.doors}'"
+            log.debug "parse():Doors '${receivedJson?.doors}'"
             createChildDevices(receivedJson?.doors)
             break
         default:
@@ -259,12 +249,4 @@ def doorNotification(message) {
             ],
             dni: mac
     ))
-}
-
-private Integer convertHexToInt(hex) {
-    return Integer.parseInt(hex,16)
-}
-
-private String convertHexToIP(hex) {
-    return [convertHexToInt(hex[0..1]),convertHexToInt(hex[2..3]),convertHexToInt(hex[4..5]),convertHexToInt(hex[6..7])].join(".")
 }
