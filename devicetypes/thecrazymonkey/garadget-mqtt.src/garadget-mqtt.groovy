@@ -252,7 +252,7 @@ def doorNotification(message) {
     def parsed = slurper.parseText(message)
     log.debug "Sending '${parsed}' to device '${ip}':'${port}'; mac:'${mac}'"
 
-    def hubAction = new physicalgraph.device.HubAction(
+    sendHubCommend(new physicalgraph.device.HubAction(
             method: "POST",
             path: parsed.path,
             body: parsed.body,
@@ -261,8 +261,7 @@ def doorNotification(message) {
                     "Content-Type": "application/json"
             ],
             dni: mac
-    )
-    hubAction
+    ))
 }
 
 private Integer convertHexToInt(hex) {
