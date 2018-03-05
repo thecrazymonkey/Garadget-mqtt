@@ -138,7 +138,7 @@ def generateEvent(name, jsonValue) {
     log.debug("generateEvent - parsed: '${parsed}'")
     switch (name) {
         case "status":
-            value = parsed.status
+            def value = parsed.status
             log.debug("generateEvent(status): '${name}'; '${value}'")
             sendEvent(name: name, value: value)
             break
