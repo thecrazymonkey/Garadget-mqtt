@@ -28,6 +28,7 @@ Diagram:
 4. Install parent (garadget-mqtt.groovy) and child (garadget-mqtt-door.groovy) DTH via Github integration or via code in the ST IDE
 4. In the IDE (easiest way) manually a device - make sure that the Device Network Id matches the mac address of the network port
 that mqttrest.js uses
+![alt text](https://github.com/thecrazymonkey/Garadget-mqtt/blob/master/pics/dthcreate.png)
 5. Once created the new device should query the mqttrest process and create child devices for all detected doors
 6. Individual doors should be listed in Things
 
