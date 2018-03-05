@@ -139,6 +139,7 @@ def generateEvent(name, jsonValue) {
     switch (name) {
         case "status":
             sendEvent(name: name, value: parsed.status)
+            sendEvent(name: 'contact', value: parsed.status)
             sendEvent(name: 'lastAction', value: parsed.time)
             sendEvent(name: 'reflection', value: parsed.sensor)
             sendEvent(name: 'rssi', value: parsed.signal)
