@@ -47,17 +47,7 @@ metadata {
         standardTile("configure", "device.configure", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
             state "configure", label:'Configure', action:"configuration.configure", icon:"st.secondary.tools"
         }
-        valueTile("rssi", "device.rssi", width: 2, height: 2) {
-            state("rssi", label:'RSSI ${currentValue}', unit:"",
-                    backgroundColors:[
-                            [value: -30, color: "#006600"],
-                            [value: -45, color: "#009900"],
-                            [value: -60, color: "#99cc00"],
-                            [value: -70, color: "#ff9900"],
-                            [value: -90, color: "#ff0000"]
-                    ]
-            )
-        }
+        main("configure")
     }
 }
 
