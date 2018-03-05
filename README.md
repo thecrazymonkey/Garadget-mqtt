@@ -1,3 +1,5 @@
+Garadget connector for Smartthings using MQTT
+
 # mqtt2rest -- An MQTT to REST Bridge for Garadget
 
 
