@@ -1,4 +1,9 @@
-/* mqtt2rest.js */
+/* mqtt2rest.js
+Thanks to  smartthings-mqtt-bridge authors
+ - st.john.johnson@gmail.com
+ - jeremiah.wuenschel@gmail.com
+ for the base code used here
+*/
 'use strict';
 // for reading config file
 const yaml = require('js-yaml'),

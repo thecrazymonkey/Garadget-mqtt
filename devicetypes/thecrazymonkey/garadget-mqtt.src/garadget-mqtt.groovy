@@ -14,6 +14,10 @@
  *  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed
  *  on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License
  *  for the specific language governing permissions and limitations under the License.
+ *
+ *  Thanks to Stuart Buchanan for the original code for the "Garadget (Connect)"
+ *  Thanks to Daniel Ogorchock for base code for child DTHs based on his ST_Anything solution
+ *
  */
 
 
@@ -202,7 +206,7 @@ def parse(String description) {
     def childId = receivedData?.name
     def payloadType = receivedData?.type
     def childInfo = receivedData?.value
-    log.debug "childId:'${childId}'; type:'${payloadType}'; info:'${childInfo}'; json:'${receivedJson}'"
+    log.debug "parse():childId:'${childId}'; type:'${payloadType}'; info:'${childInfo}'; json:'${receivedJson}'"
     switch (payloadType) {
         case "status":
         case "config":
