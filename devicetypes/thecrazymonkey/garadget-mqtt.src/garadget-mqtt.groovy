@@ -115,16 +115,26 @@ def stop(String dni) {
 
 def getStatus(String dni) {
     log.debug "Executing - getStatus()"
-    def jsonbody = '{"path": "/gmqtt/command", "body": {}}'
-    log.debug "Executing - getStatus() - ${jsonbody}"
-    doorNotification(jsonbody)
+    def json = new groovy.json.JsonOutput().toJson([
+            path: "/gmqtt/command",
+            body: [
+                    "command": "get-status",
+                    "name": "${dni}"
+            ]
+    ])
+    log.debug "Executing - getStatus() - ${json}"
+    doorNotification(json)
 }
 
 def getDoors() {
     log.debug "Executing - getDoors()"
-    def jsonbody = '{"path": "/gmqtt/doors", "body": {}}'
-    log.debug "Executing - getDoors() - ${jsonbody}"
-    doorNotification(jsonbody)
+    def json = new groovy.json.JsonOutput().toJson([
+            path: "/gmqtt/doors",
+            body: [
+            ]
+    ])
+    log.debug "Executing - getDoors() - ${json}"
+    doorNotification(json)
 }
 
 def openCommand(String dni) {
@@ -245,7 +255,7 @@ def doorNotification(message) {
             path: parsed.path,
             body: parsed.body,
             headers: [
-                    HOST          : "$ip:$port",
+                    "HOST"        : "$ip:$port",
                     "Content-Type": "application/json"
             ],
             dni: mac
