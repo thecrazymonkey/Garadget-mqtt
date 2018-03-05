@@ -20,7 +20,7 @@ import groovy.json.JsonSlurper
 import groovy.json.JsonOutput
 
 metadata {
-    definition(name: "Garadget Door", namespace: "thecrazymonkey", author: "Ivan Kunz") {
+    definition(name: "Garadget MQTT Door", namespace: "thecrazymonkey", author: "Ivan Kunz") {
         capability "Switch"
         capability "Contact Sensor"
         capability "Signal Strength"
