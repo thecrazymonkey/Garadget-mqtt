@@ -233,7 +233,8 @@ def parse(String description) {
             createChildDevices(receivedJson?.doors)
             break
         default:
-            log.error "Unknown request type:'${payloadType}';json:'${receivedJson}'"
+            // ignore anything else
+            break
     }
     return results
 }

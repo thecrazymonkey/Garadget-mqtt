@@ -133,9 +133,11 @@ def installed() {
 def generateEvent(name, jsonValue) {
     // Update device - complex handler for all responses
     log.debug("generateEvent: '${name}'; '${jsonValue}'")
+    def slurper = new JsonSlurper()
+    def parsed = slurper.parseText(jsonValue)
     switch (name) {
         case "status":
-            value = jsonValue?.status
+            value = parsed?.status
             log.debug("generateEvent(status): '${name}'; '${value}'")
             sendEvent(name: name, value: value)
             break
