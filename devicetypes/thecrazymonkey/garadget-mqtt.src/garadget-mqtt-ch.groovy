@@ -89,6 +89,10 @@ metadata {
     }
 }
 
+void poll() {
+    parent.getStatus(device.deviceNetworkId)
+}
+
 void on() {
 }
 
@@ -104,3 +108,327 @@ void close() {
 def installed() {
 
 }
+
+def generateEvent(name, jsonValue) {
+    // Update device - complex handler for all responses
+    log.debug("generateEvent: '${name}'; '${jsonValue}'")
+    switch (name) {
+        case "status":
+            value = jsonValue?.value?.status
+            log.debug("generateEvent(status): '${name}'; '${value}'")
+            sendEvent(name: name, value: value)
+            break
+        case "config":
+            break
+    }
+}
+
+/*
+// Parse incoming webhook event
+private parseWHDoorStatus(req) {
+    def status = req?.status
+    log.info("parseWHDoorStatus: started "+status)
+    sendEvent(name: 'status', value: status)
+    def time = '0s'
+    sendEvent(name: 'lastAction', value: time)
+    if(status == "open" || status == "closed"){
+        sendEvent(name: 'contact', value: status, displayed: false)
+        // schedule status call and let the WH processing return asap
+        // do it only for open or close, intermmediate states are not important
+        runIn(1, statusCommand, [overwrite: true])
+    }
+    log.info ("parseWHDoorStatus: done")
+}
+
+// Parse incoming device messages to generate events
+private parseDoorStatusResponse(resp) {
+    log.debug("Executing parseDoorStatusResponse: "+resp.data)
+    log.debug("Output status: "+resp.status)
+    if(resp.status == 200) {
+        log.debug("returnedresult: "+resp.data.result)
+        def results = (resp.data.result).tokenize('|')
+        def statusvalues = (results[0]).tokenize('=')
+        def timevalues = (results[1]).tokenize('=')
+        def sensorvalues = (results[2]).tokenize('=')
+        def signalvalues = (results[3]).tokenize('=')
+        def status = statusvalues[1]
+        sendEvent(name: 'status', value: status)
+        if(status == "open" || status == "closed"){
+            sendEvent(name: 'contact', value: status, displayed: false)
+        }
+        def time = timevalues[1]
+        sendEvent(name: 'lastAction', value: time)
+        def sensor = sensorvalues[1]
+        sendEvent(name: 'reflection', value: sensor)
+        def signal = signalvalues[1]
+        sendEvent(name: 'rssi', value: signal)
+
+    }else if(resp.status == 201){
+        log.debug("Something was created/updated")
+    }
+}
+
+private parseDoorConfigResponse(resp) {
+    log.debug("Executing parseResponse: "+resp.data)
+    log.debug("Output status: "+resp.status)
+    if(resp.status == 200) {
+        log.debug("returnedresult: "+resp.data.result)
+        def results = (resp.data.result).tokenize('|')
+
+        results.each { value ->
+            def resultValue = value.tokenize('=')
+            switch (resultValue[0]) {
+                case "ver": def ver = resultValue[1];
+                    log.debug ("GARADGET: Firmware Version (ver): " +ver);
+                    sendEvent(name: 'ver', value: ver, displayed: false);
+                    break;
+
+                case "rdt": def rdt = resultValue[1];
+                    log.debug ("GARADGET: Sensor Scan Interval (rdt): " +rdt);
+                    break;
+
+                case "mtt": def mtt = resultValue[1];
+                    state.mtt = mtt;
+                    log.debug ("GARADGET: Door Moving Time (mtt): " +mtt);
+                    break;
+
+                case "rlt": def rlt = resultValue[1];
+                    log.debug ("GARADGET: Button Press time (rlt): " +rlt);
+                    break;
+
+                case "rlp": def rlp = resultValue[1];
+                    log.debug ("GARADGET: Delay Between Consecutive Button Presses (rlp)" +rlp);
+                    break;
+
+                case "srr": def srr = resultValue[1];
+                    log.debug ("GARADGET: Number of Sensor Feeds used in Averaging: " +srr);
+                    break;
+
+                case "srt": def srt = resultValue[1];
+                    log.debug ("GARADGET: Reflection Value below which door is 'open': " +srt);
+                    break;
+
+                case "aot": def aot = resultValue[1];
+                    log.debug ("GARADGET: Alert for Open Timeout in seconds: " +aot);
+                    break;
+
+                case "ans": def ans = resultValue[1];
+                    log.debug ("GARADGET: Alert for night time start in minutes from midnight: " +ans);
+                    break;
+
+                case "ane": def ane = resultValue[1];
+                    log.debug ("GARADGET: Alert for night time end in minutes from midnight: " +ane );
+                    break;
+
+                default : log.debug ("GARADGET UNUSED CONFIG: " +resultValue[0] +" value of " +resultValue[1])
+            }
+        }
+
+
+    }else if(resp.status == 201){
+        log.debug("Something was created/updated")
+    }
+}
+
+private parseNetConfigResponse(resp) {
+    log.debug("Executing parseResponse: "+resp.data)
+    log.debug("Output status: "+resp.status)
+    if(resp.status == 200) {
+        log.debug("returnedresult: "+resp.data.result)
+        def results = (resp.data.result).tokenize('|')
+        def ipvalues = (results[0]).tokenize('=')
+        def snetvalues = (results[1]).tokenize('=')
+        def dgwvalues = (results[2]).tokenize('=')
+        def macvalues = (results[3]).tokenize('=')
+        def ssidvalues = (results[4]).tokenize('=')
+        def ip = ipvalues[1]
+        sendEvent(name: 'ip', value: ip, displayed: false)
+        log.debug("IP Address: "+ip)
+        def snet = snetvalues[1]
+        log.debug("Subnet Mask: "+snet)
+        def dgw = dgwvalues[1]
+        log.debug("Default Gateway: "+dgw)
+        def mac = macvalues[1]
+        log.debug("Mac Address: "+mac)
+        def ssid = ssidvalues[1]
+        sendEvent(name: 'ssid', value: ssid, displayed: false)
+        log.debug("Wifi SSID : "+ssid)
+    }else if(resp.status == 201){
+        log.debug("Something was created/updated")
+    }
+}
+
+private parseResponse(resp) {
+    log.debug("Executing parseResponse: "+resp.data)
+    log.debug("Output status: "+resp.status)
+    if(resp.status == 200) {
+        log.debug("Executing parseResponse.successTrue")
+        def id = resp.data.id
+        def name = resp.data.name
+        def connected = resp.data.connected
+        def returnValue = resp.data.return_value
+    }else if(resp.status == 201){
+        log.debug("Something was created/updated")
+    }
+}
+
+private getDeviceDetails() {
+    def fullDni = device.deviceNetworkId
+    return fullDni
+}
+
+private sendCommand(method, args = []) {
+    def DefaultUri = "https://api.particle.io"
+    def cdni = getDeviceDetails().tokenize(':')
+    def deviceId = cdni[0]
+    def token = cdni[1]
+    def methods = [
+            'doorStatus': [
+                    uri: "${DefaultUri}",
+                    path: "/v1/devices/${deviceId}/doorStatus",
+                    requestContentType: "application/json",
+                    query: [access_token: token]
+            ],
+            'doorConfig': [
+                    uri: "${DefaultUri}",
+                    path: "/v1/devices/${deviceId}/doorConfig",
+                    requestContentType: "application/json",
+                    query: [access_token: token]
+            ],
+            'netConfig': [
+                    uri: "${DefaultUri}",
+                    path: "/v1/devices/${deviceId}/netConfig",
+                    requestContentType: "application/json",
+                    query: [access_token: token]
+            ],
+            'setState': [
+                    uri: "${DefaultUri}",
+                    path: "/v1/devices/${deviceId}/setState",
+                    requestContentType: "application/json",
+                    query: [access_token: token],
+                    body: args[0]
+            ],
+            'setConfig': [
+                    uri: "${DefaultUri}",
+                    path: "/v1/devices/${deviceId}/setConfig",
+                    requestContentType: "application/json",
+                    query: [access_token: token],
+                    body: args[0]
+            ]
+    ]
+
+    def request = methods.getAt(method)
+
+    log.debug "Http Params ("+request+")"
+
+    try{
+        log.debug "Executing 'sendCommand'"
+
+        if (method == "doorStatus"){
+            log.debug "calling doorStatus Method"
+            httpGet(request) { resp ->
+                parseDoorStatusResponse(resp)
+            }
+        }else if (method == "doorConfig"){
+            log.debug "calling doorConfig Method"
+            httpGet(request) { resp ->
+                parseDoorConfigResponse(resp)
+            }
+        }else if (method == "netConfig"){
+            log.debug "calling netConfig Method"
+            httpGet(request) { resp ->
+                parseNetConfigResponse(resp)
+            }
+        }else if (method == "setState"){
+            log.debug "calling setState Method"
+            httpPost(request) { resp ->
+                parseResponse(resp)
+            }
+        }else if (method == "setConfig"){
+            log.debug "calling setConfig Method"
+            httpPost(request) { resp ->
+                parseResponse(resp)
+            }
+        }else{
+            httpGet(request)
+        }
+    } catch(Exception e){
+        log.debug("___exception: " + e)
+    }
+}
+
+
+def on() {
+
+    log.debug ("Executing - on()")
+    openCommand()
+}
+
+def off() {
+
+    log.debug ("Executing - off()")
+    closeCommand()
+}
+
+def stop(){
+    log.debug "Executing - stop() - 'sendCommand.setState'"
+    def jsonbody = new groovy.json.JsonOutput().toJson(arg:"stop")
+
+    sendCommand("setState",[jsonbody])
+    statusCommand()
+}
+
+def statusCommand(){
+    log.debug "Executing - statusCommand() - 'sendCommand.statusCommand'"
+    sendCommand("doorStatus",[])
+}
+
+def openCommand(){
+    log.debug "Executing - openCommand() - 'sendCommand.setState'"
+    def jsonbody = new groovy.json.JsonOutput().toJson(arg:"open")
+    sendCommand("setState",[jsonbody])
+}
+
+def closeCommand(){
+    log.debug "Executing - closeCommand() - 'sendCommand.setState'"
+    def jsonbody = new groovy.json.JsonOutput().toJson(arg:"close")
+    sendCommand("setState",[jsonbody])
+}
+
+def open() {
+    log.debug "Executing - open() - 'on'"
+    on()
+}
+
+def close() {
+    log.debug "Executing - close() - 'off'"
+    off()
+}
+
+def doorConfigCommand(){
+    log.debug "Executing doorConfigCommand() - 'sendCommand.doorConfig'"
+    sendCommand("doorConfig",[])
+}
+
+def SetConfigCommand(){
+    def crdt = prdt ?: 1000
+    def cmtt = pmtt ?: 10000
+    def crlt = prlt ?: 300
+    def crlp = prlp ?: 1000
+    def csrr = psrr ?: 3
+    def csrt = psrt ?: 25
+    def caot = paot ?: 320
+    def cans = pans ?: 1320
+    def cane = pane ?: 360
+    log.debug "Executing 'sendCommand.setConfig'"
+    def jsonbody = new groovy.json.JsonOutput().toJson(arg:"rdt=" + crdt +"|mtt=" + cmtt + "|rlt=" + crlt + "|rlp=" + crlp +"|srr=" + csrr + "|srt=" + csrt)
+    sendCommand("setConfig",[jsonbody])
+    jsonbody = new groovy.json.JsonOutput().toJson(arg:"aot=" + caot + "|ans=" + cans + "|ane=" + cane)
+    sendCommand("setConfig",[jsonbody])
+}
+
+def netConfigCommand(){
+    log.debug "Executing 'sendCommand.netConfig'"
+    sendCommand("netConfig",[])
+}
+*/

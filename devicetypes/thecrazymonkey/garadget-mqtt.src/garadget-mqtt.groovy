@@ -113,9 +113,11 @@ def stop(String dni) {
     doorNotification("setState", [jsonbody])
 }
 
-def statusCommand(String dni) {
-    log.debug "Executing - statusCommand() - 'sendCommand.statusCommand'"
-    doorNotification("doorStatus", [])
+def getStatus(String dni) {
+    log.debug "Executing - getStatus()"
+    def jsonbody = new groovy.json.JsonOutput().toJson([path: "/gmqtt/command", body: ["command": "get-status","name": ${dni}]])
+    log.debug "Executing - getStatus() - ${jsonbody}"
+    doorNotification(jsonbody)
 }
 
 def getDoors() {
@@ -203,14 +205,23 @@ def parse(String description) {
     log.debug "childId:'${childId}'; type:'${payloadType}'; info:'${childInfo}'; json:'${receivedJson}'"
     switch (payloadType) {
         case "status":
-            break
         case "config":
+            def childDevice = null
+            childDevices.each {
+                if (it.deviceNetworkId == childId) {
+                    childDevice = it
+                    log.debug "Found a match!!!"
+                }
+            }
+            childDevice.generateEvent(payloadType, receivedJson)
             break
         case "doors":
             // received list of doors
             log.debug "Doors '${receivedJson?.doors}'"
             createChildDevices(receivedJson?.doors)
             break
+        default:
+            log.error "Unknown request type:'${payloadType}';json:'${receivedJson}'"
     }
 }
 
