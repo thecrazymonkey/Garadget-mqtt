@@ -147,6 +147,8 @@ def generateEvent(name, jsonValue) {
             sendEvent(name: 'rssi', value: parsed.signal)
             break
         case "config":
+            sendEvent(name: 'ver', value: parsed.ver, displayed: false);
+            sendEvent(name: 'ssid', value: parsed.ssid, displayed: false)
             break
     }
 }
@@ -154,67 +156,6 @@ def generateEvent(name, jsonValue) {
 
 
 /*
-private parseDoorConfigResponse(resp) {
-    log.debug("Executing parseResponse: "+resp.data)
-    log.debug("Output status: "+resp.status)
-    if(resp.status == 200) {
-        log.debug("returnedresult: "+resp.data.result)
-        def results = (resp.data.result).tokenize('|')
-
-        results.each { value ->
-            def resultValue = value.tokenize('=')
-            switch (resultValue[0]) {
-                case "ver": def ver = resultValue[1];
-                    log.debug ("GARADGET: Firmware Version (ver): " +ver);
-                    sendEvent(name: 'ver', value: ver, displayed: false);
-                    break;
-
-                case "rdt": def rdt = resultValue[1];
-                    log.debug ("GARADGET: Sensor Scan Interval (rdt): " +rdt);
-                    break;
-
-                case "mtt": def mtt = resultValue[1];
-                    state.mtt = mtt;
-                    log.debug ("GARADGET: Door Moving Time (mtt): " +mtt);
-                    break;
-
-                case "rlt": def rlt = resultValue[1];
-                    log.debug ("GARADGET: Button Press time (rlt): " +rlt);
-                    break;
-
-                case "rlp": def rlp = resultValue[1];
-                    log.debug ("GARADGET: Delay Between Consecutive Button Presses (rlp)" +rlp);
-                    break;
-
-                case "srr": def srr = resultValue[1];
-                    log.debug ("GARADGET: Number of Sensor Feeds used in Averaging: " +srr);
-                    break;
-
-                case "srt": def srt = resultValue[1];
-                    log.debug ("GARADGET: Reflection Value below which door is 'open': " +srt);
-                    break;
-
-                case "aot": def aot = resultValue[1];
-                    log.debug ("GARADGET: Alert for Open Timeout in seconds: " +aot);
-                    break;
-
-                case "ans": def ans = resultValue[1];
-                    log.debug ("GARADGET: Alert for night time start in minutes from midnight: " +ans);
-                    break;
-
-                case "ane": def ane = resultValue[1];
-                    log.debug ("GARADGET: Alert for night time end in minutes from midnight: " +ane );
-                    break;
-
-                default : log.debug ("GARADGET UNUSED CONFIG: " +resultValue[0] +" value of " +resultValue[1])
-            }
-        }
-
-
-    }else if(resp.status == 201){
-        log.debug("Something was created/updated")
-    }
-}
 
 private parseNetConfigResponse(resp) {
     log.debug("Executing parseResponse: "+resp.data)
