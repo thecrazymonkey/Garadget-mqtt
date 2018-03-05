@@ -138,60 +138,19 @@ def generateEvent(name, jsonValue) {
     log.debug("generateEvent - parsed: '${parsed}'")
     switch (name) {
         case "status":
-            def value = parsed.status
-            log.debug("generateEvent(status): '${name}'; '${value}'")
-            sendEvent(name: name, value: value)
+            sendEvent(name: name, value: parsed.status)
+            sendEvent(name: 'lastAction', value: parsed.time)
+            sendEvent(name: 'reflection', value: parsed.sensor)
+            sendEvent(name: 'rssi', value: parsed.signal)
             break
         case "config":
             break
     }
 }
 
+
+
 /*
-// Parse incoming webhook event
-private parseWHDoorStatus(req) {
-    def status = req?.status
-    log.info("parseWHDoorStatus: started "+status)
-    sendEvent(name: 'status', value: status)
-    def time = '0s'
-    sendEvent(name: 'lastAction', value: time)
-    if(status == "open" || status == "closed"){
-        sendEvent(name: 'contact', value: status, displayed: false)
-        // schedule status call and let the WH processing return asap
-        // do it only for open or close, intermmediate states are not important
-        runIn(1, statusCommand, [overwrite: true])
-    }
-    log.info ("parseWHDoorStatus: done")
-}
-
-// Parse incoming device messages to generate events
-private parseDoorStatusResponse(resp) {
-    log.debug("Executing parseDoorStatusResponse: "+resp.data)
-    log.debug("Output status: "+resp.status)
-    if(resp.status == 200) {
-        log.debug("returnedresult: "+resp.data.result)
-        def results = (resp.data.result).tokenize('|')
-        def statusvalues = (results[0]).tokenize('=')
-        def timevalues = (results[1]).tokenize('=')
-        def sensorvalues = (results[2]).tokenize('=')
-        def signalvalues = (results[3]).tokenize('=')
-        def status = statusvalues[1]
-        sendEvent(name: 'status', value: status)
-        if(status == "open" || status == "closed"){
-            sendEvent(name: 'contact', value: status, displayed: false)
-        }
-        def time = timevalues[1]
-        sendEvent(name: 'lastAction', value: time)
-        def sensor = sensorvalues[1]
-        sendEvent(name: 'reflection', value: sensor)
-        def signal = signalvalues[1]
-        sendEvent(name: 'rssi', value: signal)
-
-    }else if(resp.status == 201){
-        log.debug("Something was created/updated")
-    }
-}
-
 private parseDoorConfigResponse(resp) {
     log.debug("Executing parseResponse: "+resp.data)
     log.debug("Output status: "+resp.status)
