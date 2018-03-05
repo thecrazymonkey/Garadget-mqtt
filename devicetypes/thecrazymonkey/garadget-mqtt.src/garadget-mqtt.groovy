@@ -205,6 +205,7 @@ def setNetworkAddress() {
 
 // Parse events from the Bridge
 def parse(String description) {
+    def results = []
     log.debug "Parsing '${description}'"
     def msg = parseLanMessage(description)
     log.debug "Parsed '${msg}'"
@@ -234,6 +235,7 @@ def parse(String description) {
         default:
             log.error "Unknown request type:'${payloadType}';json:'${receivedJson}'"
     }
+    return results
 }
 
 // Send message to the Bridge
