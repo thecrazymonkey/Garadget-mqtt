@@ -213,7 +213,7 @@ def parse(String description) {
                     log.debug "Found a match!!!"
                 }
             }
-            childDevice.generateEvent(payloadType, receivedJson)
+            childDevice.generateEvent(payloadType, receivedJson?.value)
             break
         case "doors":
             // received list of doors
