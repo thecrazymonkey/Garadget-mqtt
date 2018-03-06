@@ -66,6 +66,11 @@ def sync(ip, port, mac) {
 def refresh() {
     log.debug "Executing 'refresh'"
     getDoors()
+    def children = getChildDevices()
+    children.each { child ->
+            getStatus(child.deviceNetworkId)
+    }
+
 }
 
 def configure() {
