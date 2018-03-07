@@ -1,10 +1,10 @@
 mqtt:
-  host: "192.168.1.3"
+  host: "192.168.1.39"
   port: 1883
-  doors: ["Garage1", "Garage2"]
+#  doors: ["Garage1", "Garage2"]
   prefix: "garadget"
 http:
-  host: 192.168.1.35
+  host: localhost
   port: 8081
 application:
   logLevel: "debug"

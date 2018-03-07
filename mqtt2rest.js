@@ -51,10 +51,15 @@ const mqtt    = require('mqtt');
 var mqtt_client  = mqtt.connect(config.mqtt);
 mqtt_client.on('connect', function () {
     var topicArray = [];
-    config.mqtt.doors.forEach(function(item) {
-        // listening only to status and config reports
-        topicArray.push([config.mqtt.prefix,item,"status"].join("/"), [config.mqtt.prefix,item,"config"].join("/"));
-    });
+    if ("doors" in config.mqtt) {
+        config.mqtt.doors.forEach(function(item) {
+            // listening only to status and config reports
+            topicArray.push([config.mqtt.prefix,item,"status"].join("/"), [config.mqtt.prefix,item,"config"].join("/"));
+        });
+    } else {
+        // just listen to all available
+        topicArray.push([config.mqtt.prefix,'+',"status"].join("/"), [config.mqtt.prefix,'+',"config"].join("/"));
+    }
     logger.debug(topicArray);
     mqtt_client.subscribe(topicArray);
 });

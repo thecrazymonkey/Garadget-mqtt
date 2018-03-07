@@ -18,6 +18,21 @@ Diagram:
 
 1. Install and configure MQTT broker
 2. Setup mqttrest - can be run standalone or on RB Pi within a Docker container, Dockerfile is included
+
+config.yml contents:
+mqtt:
+  host: "192.168.1.39"  <------- host of MQTT broker
+  port: 1883            <------- port of MQTT broker
+#  doors: ["Garage1", "Garage2"]   <------- door names are configured in Garadget app - not mandatory
+  prefix: "garadget"    <------- prefix used for Garadget topics
+http:
+  host: localhost       <------- IP address of the network host this application is running on
+  port: 8081            <------- port of the network host this application is running on
+application:
+  logLevel: "debug"
+ssdp:
+   enabled: false       <------- leave as is
+
     To "Dockerize this":
     a. Go to the folder with the Dockerfile
     b. Run >docker build .
