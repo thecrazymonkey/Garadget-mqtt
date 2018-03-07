@@ -171,7 +171,7 @@ def closeCommand(String dni) {
 def installed() {
     log.debug "Executing - 'installed()'"
     configure()
-    runEvery5minutes("refresh")
+    runEvery5Minutes("refresh")
 }
 
 private void createChildDevices(List<String> doors) {
@@ -210,8 +210,7 @@ def parse(String description) {
     def receivedJson = msg.json
     def childId = receivedData?.name
     def payloadType = receivedData?.type
-    def childInfo = receivedData?.value
-    log.debug "parse():childId:'${childId}'; type:'${payloadType}'; info:'${childInfo}'; json:'${receivedJson}'"
+    log.debug "parse():childId:'${childId}'; type:'${payloadType}'; json:'${receivedJson}'"
     switch (payloadType) {
         case "status":
         case "config":
