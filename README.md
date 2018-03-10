@@ -44,6 +44,11 @@ ssdp:
 4. In the IDE (easiest way) manually a device - make sure that the Device Network Id matches the mac address of the network port
 that mqttrest.js uses
 ![alt text](https://github.com/thecrazymonkey/Garadget-mqtt/blob/master/pics/dthcreate.png)
-5. Once created the new device should query the mqttrest process and create child devices for all detected doors
-6. Individual doors should be listed in Things
+5. Once created the new device needs additional configuration - again can be provided via Web IDE
+    a. MQTT2REST IP address
+    b. MQTT2REST port
+    c. MQTT2REST MAC address
+6. Once configured hit a refresh button on the newly created device in Things list
+7. The devuce should then query the mqttrest process and create child devices for all detected doors
+8. Individual doors should be listed in Things
 

@@ -187,7 +187,8 @@ private void createChildDevices(List<String> doors) {
 
     for (String door : newDoors) {
         log.debug "createChildDevices():Adding door: '${door}'"
-        addChildDevice("Garadget MQTT door", "${door}", device.hub.id, [completedSetup: true, label: "${door} (MQTT)", isComponent: false, componentName: "${door}", componentLabel: "${door} (MQTT)"])
+        addChildDevice("Garadget MQTT door", "${door}", device.hub.id, [completedSetup: true, label: "${door} (MQTT)",
+                                       isComponent: false, componentName: "${door}", componentLabel: "${door} (MQTT)"])
     }
 }
 
