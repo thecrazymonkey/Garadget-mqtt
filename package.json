@@ -1,0 +1,32 @@
+{
+  "name": "mqtt2rest",
+  "version": "1.0.0",
+  "description": "Simple REST client/server to MQTT ",
+  "main": "mqtt2rest.js",
+  "dependencies": {
+    "express": "^4.16.2",
+    "express-joi-validator": "^2.0.0",
+    "express-winston": "^2.5.0",
+    "joi": "^13.1.2",
+    "js-yaml": "^3.10.0",
+    "jsonfile": "^4.0.0",
+    "mqtt": "^2.15.3",
+    "node-ssdp": "^3.2.5",
+    "request": "^2.83.0",
+    "winston": "^2.4.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thecrazymonkey/mqtt2rest.git"
+  },
+  "author": "thecrazymonkey",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/thecrazymonkey/mqtt2rest/issues"
+  },
+  "homepage": "https://github.com/thecrazymonkey/mqtt2rest#readme"
+}
