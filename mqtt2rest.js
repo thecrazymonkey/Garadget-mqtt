@@ -73,7 +73,7 @@ mqtt_client.on('message', function (topic, message) {
         property = pieces[2];
     // keep object holding door names
     garageDoors[device] = device;
-    logger.debug("Pushing to:",callback," : ",device," : ",property," : ",message.toString());
+    logger.info("Pushing to:",callback," : ",device," : ",property," : ",message.toString());
     if (callback != null) {
         request.post({
             url: callback,
@@ -139,10 +139,10 @@ app.post('/gmqtt/command',
         logger.debug("Request :", req.body)
         // try sending callback info in every command to avoid need for separate subscription call
         callback = req.body.callback ? req.body.callback : callback;
-        // ignore unconfigured door or unsupported command
-        if (garadgetCommands.includes(req.body.command) && config.mqtt.doors.includes(req.body.name)) {
+        // ignore unconfigured door (if door names are explicitly configured)  or unsupported command
+        if (garadgetCommands.includes(req.body.command) && (!("doors" in config.mqtt) || config.mqtt.doors.includes(req.body.name))) {
             logger.debug("Received command for:", req.body.name, ";value:", req.body.command, ";will call back to:",callback);
-            logger.debug("Calling mqtt publish:", [config.mqtt.prefix, req.body.name, 'command'].join('/'), " with value:", req.body.command);
+            logger.info("Calling mqtt publish:", [config.mqtt.prefix, req.body.name, 'command'].join('/'), " with value:", req.body.command);
             mqtt_client.publish([config.mqtt.prefix, req.body.name, 'command'].join('/'), req.body.command);
         } else {
             logger.error("Unsupported combination. Received command for:", req.body.name, ";value:", req.body.command);
@@ -164,6 +164,7 @@ app.post('/gmqtt/set-config',
         // ignore unconfigured door
         if (config.mqtt.doors.includes(req.body.name)) {
             logger.debug("Received set-config for:", req.body.name, ";value:", JSON.stringify(req.body.value))
+            logger.info("Calling mqtt publish:", [config.mqtt.prefix, req.body.name, 'set-config'].join('/'), " with value:", req.body.value);
             mqtt_client.publish([config.mqtt.prefix, req.body.name, 'set-config'].join('/'), JSON.stringify(req.body.value));
         } else {
             logger.error("Unsupported combination. Received command for:", req.body.name, ";value:", req.body.command);
@@ -174,5 +175,5 @@ app.post('/gmqtt/set-config',
 
 // REST server init
 const server = app.listen(config.http.port, config.http.host, function () {
-    logger.debug("Garadget mqtt2rest listening at http://%s:%s", server.address().address, server.address().port)
+    logger.info("Garadget mqtt2rest listening at http://%s:%s", server.address().address, server.address().port)
 });

@@ -7,6 +7,6 @@ http:
   host: localhost
   port: 8081
 application:
-  logLevel: "debug"
+  logLevel: "info"
 ssdp:
    enabled: false
