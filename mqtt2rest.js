@@ -42,7 +42,7 @@ const logger = new (winston.Logger)({
         new (winston.transports.Console)({
           timestamp: tsFormat,
           colorize: true,
-          level: (config.application.logLevel ? config.application.logLevel : info)
+          level: (config.application.logLevel ? config.application.logLevel : 'info')
         })
     ]
 });
@@ -109,7 +109,7 @@ app.use(expressWinston.logger({
             timestamp: tsFormat,
             json: false,
             colorize: true,
-            level: (config.application.logLevelHttp ? config.application.logLevelHttp : error)
+            level: (config.application.logLevelHttp ? config.application.logLevelHttp : 'error')
 
         })
     ]
