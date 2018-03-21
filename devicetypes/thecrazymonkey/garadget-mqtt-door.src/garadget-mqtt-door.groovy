@@ -33,6 +33,7 @@ metadata {
         capability "Polling"
         capability "Configuration"
         capability "Garage Door Control"
+        capability "Door Control"
 
         attribute "reflection", "string"
         attribute "status", "string"
@@ -166,7 +167,9 @@ def generateEvent(name, jsonValue) {
     log.debug("generateEvent(): '${name}'; '${parsed}'")
     switch (name) {
         case "status":
-            sendEvent(name: 'contact', value: parsed.status)
+            if(parsed.status == "open" || parsed.status == "closed"){
+                sendEvent(name: 'contact', value: parsed.status)
+            }
             sendEvent(name: 'door', value: parsed.status)
             sendEvent(name: name, value: parsed.status)
             sendEvent(name: 'lastAction', value: parsed.time)
