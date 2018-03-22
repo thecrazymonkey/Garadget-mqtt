@@ -42,7 +42,7 @@ const logger = new (winston.Logger)({
         new (winston.transports.Console)({
           timestamp: tsFormat,
           colorize: true,
-          level: (config.application.logLevel ? config.application.logLevel : 'info')
+          level: config.application.logLevel
         })
     ]
 });
@@ -75,29 +75,35 @@ mqtt_client.on('message', function (topic, message) {
     garageDoors[device] = device;
     logger.info("Pushing to:",callback," : ",device," : ",property," : ",message.toString());
     if (callback != null) {
-        request.post({
-            url: callback,
-            json: {
-                name: device,
-                type: property,
-                value: message.toString()
-            },
-            localAddress: config.http.host
-        }, function (error, response, body) {
-            if (error) {
-                // @TODO handle the response from SmartThings
-                logger.error('Error from SmartThings Hub: %s', error.toString());
-                logger.error(JSON.stringify(error, null, 4));
-                logger.error(JSON.stringify(resp, null, 4));
-            } else {
-                logger.debug("Response:", response.statusCode);
-                logger.debug("Body:", body);
-            }
-        });
+        try {
+            request.post({
+                url: callback,
+                json: {
+                    name: device,
+                    type: property,
+                    value: message.toString()
+                },
+                localAddress: config.http.host,
+                time: true,
+                forever: true
+            }, function (error, response, body) {
+                if (error) {
+                    logger.error('Error from the request layer: %s', error.toString());
+                    logger.error(JSON.stringify(error, null, 4));
+                    logger.error(JSON.stringify(response, null, 4));
+                } else {
+                    logger.debug("Response:", response.statusCode);
+                    logger.debug("Body:", body);
+                }
+            });
+        } catch (e) {
+            logger.error('Error from the request layer: %s', e.message);
+            // do nothing and hope for recovery
+        }
     }
 });
 
-// REST server for processing Smartthings requests
+// REST server for processing SmartThings requests
 const express = require('express');
 const app = express();
 app.use(bodyparser.json());
@@ -109,7 +115,7 @@ app.use(expressWinston.logger({
             timestamp: tsFormat,
             json: false,
             colorize: true,
-            level: (config.application.logLevelHttp ? config.application.logLevelHttp : 'error')
+            level: config.application.logLevelHttp
 
         })
     ]
