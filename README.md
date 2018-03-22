@@ -30,15 +30,18 @@ http:
   port: 8081            <------- port of the network host this application is running on
 application:
   logLevel: "debug"
-ssdp:
-   enabled: false       <------- leave as is
+  logLevelHttp: "info"  <------- - log level to be used by the express
 
     To "Dockerize this":
-    a. Go to the folder with the Dockerfile
-    b. Run >docker build .
-    c. Tag the image using >docker tag <id of built image> garadget-mqttrest
-    d. Run the container  >docker run -d --name mqtt2rest --network=host --restart=always -w /usr/src/mqtt2rest garadget-mqtt2rest
-    e. Check the logs >docker logs mqtt2rest
+        a. Go to the folder with the Dockerfile
+        b. Run >docker build .
+        c. Tag the image using >docker tag <id of built image> garadget-mqttrest
+        d. Run the container  >docker run -d --name mqtt2rest --network=host --restart=always -w /usr/src/mqtt2rest garadget-mqtt2rest
+        e. Check the logs >docker logs mqtt2rest
+    To use pm2 (assuming pm2 is installed and integrated with systemd for automated startup - refer to pm2 user guide):
+        a. Go to the folder with the mqtt2rest.js file
+        b. execute the following "pm2 start ecosystem.config.js"
+        c. check logs using "pm2 logs mqtt2rest"
 3. Verify in mqttrest log that you're getting updates from the MQTT broker Garadget topics
 4. Install parent (garadget-mqtt.groovy) and child (garadget-mqtt-door.groovy) DTH via Github integration or via code in the ST IDE
 4. In the IDE (easiest way) manually a device - make sure that the Device Network Id matches the mac address of the network port
