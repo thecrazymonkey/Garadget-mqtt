@@ -19,26 +19,29 @@ Diagram:
 1. Install and configure MQTT broker
 2. Setup mqttrest - can be run standalone or on RB Pi within a Docker container, Dockerfile is included
 
-config.yml contents:
-mqtt:
-  host: "192.168.1.39"  <------- host of MQTT broker
-  port: 1883            <------- port of MQTT broker
-  doors: ["Garage1", "Garage2"]   <------- door names that are configured in Garadget app - not mandatory
-  prefix: "garadget"    <------- prefix used for Garadget topics
-http:
-  host: localhost       <------- IP address of the network host this application is running on
-  port: 8081            <------- port of the network host this application is running on
-application:
-  logLevel: "debug"
-  logLevelHttp: "info"  <------- - log level to be used by the express
+    config.yml contents:
+    
+        mqtt:
+          host: "192.168.1.39"  <------- host of MQTT broker
+          port: 1883            <------- port of MQTT broker
+          doors: ["Garage1", "Garage2"]   <------- door names that are configured in Garadget app - not mandatory
+          prefix: "garadget"    <------- prefix used for Garadget topics
+        http:
+          host: localhost       <------- IP address of the network host this application is running on
+          port: 8081            <------- port of the network host this application is running on
+        application:
+          logLevel: "debug"
+          logLevelHttp: "info"  <------- - log level to be used by the express
 
     To "Dockerize this":
+    
         a. Go to the folder with the Dockerfile
         b. Run >docker build .
         c. Tag the image using >docker tag <id of built image> garadget-mqttrest
         d. Run the container  >docker run -d --name mqtt2rest --network=host --restart=always -w /usr/src/mqtt2rest garadget-mqtt2rest
         e. Check the logs >docker logs mqtt2rest
     To use pm2 (assuming pm2 is installed and integrated with systemd for automated startup - refer to pm2 user guide):
+    
         a. Go to the folder with the mqtt2rest.js file
         b. execute the following "pm2 start ecosystem.config.js"
         c. check logs using "pm2 logs mqtt2rest"
