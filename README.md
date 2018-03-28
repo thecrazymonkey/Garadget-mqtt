@@ -23,7 +23,7 @@ config.yml contents:
 mqtt:
   host: "192.168.1.39"  <------- host of MQTT broker
   port: 1883            <------- port of MQTT broker
-#  doors: ["Garage1", "Garage2"]   <------- door names are configured in Garadget app - not mandatory
+  doors: ["Garage1", "Garage2"]   <------- door names that are configured in Garadget app - not mandatory
   prefix: "garadget"    <------- prefix used for Garadget topics
 http:
   host: localhost       <------- IP address of the network host this application is running on
