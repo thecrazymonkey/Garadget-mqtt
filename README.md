@@ -1,4 +1,4 @@
-# Garadget connector for Smartthings using MQTT
+# Garadget connector for SmartThings using MQTT
 
 Using a bridge:
 mqtt2rest -- An MQTT to REST Bridge for Garadget
