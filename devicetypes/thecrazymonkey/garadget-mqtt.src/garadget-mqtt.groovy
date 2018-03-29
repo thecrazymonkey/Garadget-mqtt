@@ -44,25 +44,6 @@ metadata {
     }
 }
 
-
-// used with ssdp - TODO fixing if ssdp is going to be used
-def sync(ip, port, mac) {
-    log.debug "Executing 'sync()': ${ip}:${port}:${mac}"
-    def existingIp = getDataValue("ip")
-    def existingPort = getDataValue("port")
-    log.debug "Executing 'sync' existing : ${existingIp}:${existingPort}"
-    if (ip && ip != existingIp) {
-        updateDataValue("ip", ip)
-    }
-    if (port && port != existingPort) {
-        updateDataValue("port", port)
-    }
-    def existingMac = getDataValue("mac")
-    if (mac && mac!= existingMac) {
-        updateDataValue("mac", mac)
-    }
-}
-
 def refresh() {
     log.debug "Executing 'refresh'"
     getDoors()

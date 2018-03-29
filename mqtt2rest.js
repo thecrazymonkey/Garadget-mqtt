@@ -185,3 +185,12 @@ app.post('/gmqtt/set-config',
 const server = app.listen(config.http.port, config.http.host, function () {
     logger.info("Garadget mqtt2rest listening at http://%s:%s", server.address().address, server.address().port)
 });
+
+server.on('error', (e) => {
+    logger.error("Server instantiation failure : %s", e);
+    setTimeout(() => {
+      server.close();
+      process.exit(1);
+      // let the pm2 deal with it
+    }, 5000);
+});
