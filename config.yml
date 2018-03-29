@@ -9,5 +9,3 @@ http:
 application:
   logLevel: info
   logLevelHttp: error
-ssdp:
-  enabled: false
