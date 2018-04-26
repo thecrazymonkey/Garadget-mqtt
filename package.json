@@ -7,14 +7,16 @@
     "express": "^4.16.2",
     "express-joi-validator": "^2.0.0",
     "express-winston": "^2.5.0",
-    "joi": "^13.1.2",
+    "joi": "^13.2.0",
     "js-yaml": "^3.10.0",
-    "jsonfile": "^4.0.0",
     "mqtt": "^2.15.3",
     "request": "^2.83.0",
     "winston": "^2.4.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "eslint": "^4.19.1",
+    "eslint-config-google": "^0.9.1"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

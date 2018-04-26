@@ -8,14 +8,15 @@ Thanks to  smartthings-mqtt-bridge authors
 // for reading config file
 const yaml = require('js-yaml'),
     path = require('path'),
-    jsonfile = require('jsonfile'),
     expressJoi = require('express-joi-validator'),
     joi = require('joi'),
     winston = require('winston'),
     bodyparser = require('body-parser'),
     expressWinston = require('express-winston'),
     fs = require('fs'),
-    request = require('request');
+    request = require('request'),
+    mqtt = require('mqtt'),
+    express = require('express');
 
 
 const CONFIG_DIR = process.env.CONFIG_DIR || process.cwd(),
@@ -23,16 +24,17 @@ const CONFIG_DIR = process.env.CONFIG_DIR || process.cwd(),
     garadgetCommands = ['open', 'close', 'stop', 'get-config', 'get-status','set-config'];
 
 // load config
+let config = {};
 try {
-    var config = yaml.safeLoad(fs.readFileSync(CONFIG_FILE));
+    config = yaml.safeLoad(fs.readFileSync(CONFIG_FILE));
 } catch (e) {
     console.log("Configuration reading error :", e);
     process.exit(1);
 }
 
 // global vars used throughout
-var garageDoors = {};
-var callback = null;
+let garageDoors = {};
+let callback = null;
 
 // logging setup
 const tsFormat = () => (new Date()).toLocaleTimeString();
@@ -48,10 +50,9 @@ const logger = new (winston.Logger)({
 });
 
 /* mqtt init */
-const mqtt    = require('mqtt');
-var mqtt_client  = mqtt.connect(config.mqtt);
+const mqtt_client  = mqtt.connect(config.mqtt);
 mqtt_client.on('connect', function () {
-    var topicArray = [];
+    let topicArray = [];
     if ("doors" in config.mqtt) {
         config.mqtt.doors.forEach(function(item) {
             // listening only to status and config reports
@@ -68,7 +69,7 @@ mqtt_client.on('connect', function () {
 // forward MQTT packets to REST
 mqtt_client.on('message', function (topic, message) {
     logger.debug("MQTT Received Packet from ",topic.toString()," : ",message.toString());
-    var pieces = topic.split('/'),
+    let pieces = topic.split('/'),
         device = pieces[1],
         property = pieces[2];
     // keep object holding door names
@@ -104,7 +105,6 @@ mqtt_client.on('message', function (topic, message) {
 });
 
 // REST server for processing SmartThings requests
-const express = require('express');
 const app = express();
 app.use(bodyparser.json());
 
