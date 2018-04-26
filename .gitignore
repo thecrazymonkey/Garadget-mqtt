@@ -96,5 +96,4 @@ $RECYCLE.BIN/
 .idea/misc.xml
 .idea/modules.xml
 
-.vs/slnx.sqlite
-.vs/mqtt2rest/v15/.suo
+.vs/
