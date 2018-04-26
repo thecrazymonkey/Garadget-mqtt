@@ -16,7 +16,7 @@ Diagram:
 
 .. and SmartThings composite DTH
 
-1. Install and configure MQTT broker
+1. Install and configure MQTT broker; configure Garadget device to utilize MQTT protocol using this broker
 2. Setup mqttrest - can be run standalone or on RB Pi within a Docker container, Dockerfile is included
 
     config.yml contents:
@@ -55,6 +55,6 @@ that mqttrest.js uses
     b. MQTT2REST port
     c. MQTT2REST MAC address
 6. Once configured hit a refresh button on the newly created device in Things list
-7. The devuce should then query the mqttrest process and create child devices for all detected doors
+7. The device should then query the mqttrest process and create child devices for all detected doors
 8. Individual doors should be listed in Things
 
