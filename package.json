@@ -5,7 +5,6 @@
   "main": "mqtt2rest.js",
   "dependencies": {
     "express": "^4.16.2",
-    "express-joi-validator": "^2.0.0",
     "express-winston": "^2.5.0",
     "joi": "^13.2.0",
     "js-yaml": "^3.10.0",

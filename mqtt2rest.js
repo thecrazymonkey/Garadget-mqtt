@@ -6,10 +6,11 @@ Thanks to  smartthings-mqtt-bridge authors
 */
 'use strict';
 // for reading config file
+
 const yaml = require('js-yaml'),
     path = require('path'),
-    expressJoi = require('express-joi-validator'),
     joi = require('joi'),
+    expressJoi = require('./expressJoiValidator'),
     winston = require('winston'),
     bodyparser = require('body-parser'),
     expressWinston = require('express-winston'),
@@ -17,7 +18,6 @@ const yaml = require('js-yaml'),
     request = require('request'),
     mqtt = require('mqtt'),
     express = require('express');
-
 
 const CONFIG_DIR = process.env.CONFIG_DIR || process.cwd(),
     CONFIG_FILE = path.join(CONFIG_DIR, 'config.yml'),
