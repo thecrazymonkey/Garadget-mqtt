@@ -4,8 +4,10 @@
   "description": "Simple REST client/server to MQTT ",
   "main": "mqtt2rest.js",
   "dependencies": {
+    "boom": "^7.2.0",    
     "express": "^4.16.2",
     "express-winston": "^2.5.0",
+    "extend": "^3.0.1",  
     "joi": "^13.2.0",
     "js-yaml": "^3.10.0",
     "mqtt": "^2.15.3",
