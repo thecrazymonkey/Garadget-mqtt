@@ -1,7 +1,7 @@
 {
   "name": "mqtt2rest",
   "version": "1.0.0",
-  "description": "Simple REST client/server to MQTT ",
+  "description": "Simple REST client/server for Garadget MQTT <-> Smartthings",
   "main": "mqtt2rest.js",
   "dependencies": {
     "boom": "^7.2.0",
